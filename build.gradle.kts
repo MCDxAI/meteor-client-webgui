@@ -1,10 +1,10 @@
 plugins {
-    id("fabric-loom") version "1.12-SNAPSHOT"
+    alias(libs.plugins.fabric.loom)
 }
 
 base {
     archivesName = properties["archives_base_name"] as String
-    version = properties["mod_version"] as String
+    version = libs.versions.mod.version.get()
     group = properties["maven_group"] as String
 }
 
@@ -18,40 +18,38 @@ repositories {
         name = "meteor-maven-snapshots"
         url = uri("https://maven.meteordev.org/snapshots")
     }
-    flatDir {
-        dirs("libs")
-    }
 }
 
 dependencies {
-    // Fabric
-    minecraft("com.mojang:minecraft:${properties["minecraft_version"] as String}")
-    mappings("net.fabricmc:yarn:${properties["yarn_mappings"] as String}:v2")
-    modImplementation("net.fabricmc:fabric-loader:${properties["loader_version"] as String}")
+    // Minecraft
+    minecraft(libs.minecraft)
+    mappings(variantOf(libs.yarn) { classifier("v2") })
+    modImplementation(libs.fabric.loader)
 
-    // Meteor - using local JAR for consistent version
-    modImplementation(files("libs/meteor-client-${properties["meteor_version"] as String}.jar"))
-
-    // Compile-time access to Orbit event bus (provided by Meteor at runtime)
-    compileOnly("meteordevelopment:orbit:0.2.4")
+    // Meteor Client
+    modImplementation(libs.meteor.client)
+    compileOnly(libs.orbit)
 
     // NanoHTTPD for HTTP server and WebSocket support
-    modImplementation("org.nanohttpd:nanohttpd:2.3.1")!!.let { include(it) }
-    modImplementation("org.nanohttpd:nanohttpd-websocket:2.3.1")!!.let { include(it) }
+    modImplementation(libs.nanohttpd.core)
+    include(libs.nanohttpd.core)
+    modImplementation(libs.nanohttpd.websocket)
+    include(libs.nanohttpd.websocket)
 
     // JSON serialization for WebSocket messages
-    modImplementation("com.google.code.gson:gson:2.11.0")!!.let { include(it) }
+    modImplementation(libs.gson)
+    include(libs.gson)
 
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+    testImplementation(libs.junit.api)
+    testRuntimeOnly(libs.junit.engine)
 }
 
 tasks {
     processResources {
         val propertyMap = mapOf(
             "version" to project.version,
-            "mc_version" to project.property("minecraft_version"),
+            "mc_version" to libs.versions.minecraft.get(),
         )
 
         inputs.properties(propertyMap)

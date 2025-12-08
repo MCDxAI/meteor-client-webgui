@@ -4,7 +4,13 @@ on:
   push:
     branches:
       - main
+    paths:
+      - '**.java'
+      - '.github/workflows/release.yml'
   pull_request:
+    paths:
+      - '**.java'
+      - '.github/workflows/release.yml'
   workflow_dispatch:
     inputs:
       version:

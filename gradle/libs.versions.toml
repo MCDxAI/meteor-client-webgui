@@ -1,0 +1,44 @@
+[versions]
+# Mod Properties
+mod-version = "0.2.0"
+
+# Minecraft
+minecraft = "1.21.10"
+yarn-mappings = "1.21.10+build.2"
+fabric-loader = "0.17.3"
+loom = "1.12-SNAPSHOT"
+
+# Dependencies
+meteor = "1.21.10-SNAPSHOT"
+orbit = "0.2.4"
+
+# WebServer and WebSocket
+nanohttpd = "2.3.1"
+gson = "2.11.0"
+
+# Testing
+junit = "5.10.2"
+
+[libraries]
+# Minecraft
+minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
+yarn = { module = "net.fabricmc:yarn", version.ref = "yarn-mappings" }
+fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
+
+# Meteor
+meteor-client = { module = "meteordevelopment:meteor-client", version.ref = "meteor" }
+orbit = { module = "meteordevelopment:orbit", version.ref = "orbit" }
+
+# WebServer
+nanohttpd-core = { module = "org.nanohttpd:nanohttpd", version.ref = "nanohttpd" }
+nanohttpd-websocket = { module = "org.nanohttpd:nanohttpd-websocket", version.ref = "nanohttpd" }
+
+# JSON
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+
+# Testing
+junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+
+[plugins]
+fabric-loom = { id = "fabric-loom", version.ref = "loom" }

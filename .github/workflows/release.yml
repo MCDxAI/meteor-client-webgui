@@ -2,12 +2,7 @@ name: Build and Release Addon
 
 on:
   push:
-    branches:
-      - main
-      - 'claude/**'
   pull_request:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       version:

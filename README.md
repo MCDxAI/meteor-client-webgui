@@ -61,8 +61,8 @@
 | Step | Instructions |
 |:---:|:---|
 | **1. Requirements** | • Java 21+<br>• Node.js 18+ (only for web UI development)<br>• Minecraft 1.21.10 with Fabric Loader 0.17.3+<br>• Meteor Client 1.21.10-32 |
-| **2. Build the addon** | <pre>./gradlew build</pre><br>The jar is created at `build/libs/meteor-webgui-0.1.0.jar`. This task also runs `npm run build` inside `webui/` and copies the output into `src/main/resources/webui` so the HTTP server can serve it. |
-| **3. Install into Minecraft** | 1. Copy `build/libs/meteor-webgui-0.1.0.jar` to `.minecraft/mods/`.<br>2. Copy `libs/meteor-client-1.21.10-32.jar` beside it (ensure Fabric Loader is installed).<br>3. Launch Minecraft with your Fabric profile. |
+| **2. Download the addon** | Download the latest `.jar` release from the [GitHub Releases](https://github.com/GhostTypes/meteor-client-webgui/releases) page. |
+| **3. Install into Minecraft** | 1. Copy the downloaded `.jar` file to `.minecraft/mods/`.<br>2. Ensure the required Meteor Client version is installed.<br>3. Launch Minecraft with your Fabric profile. |
 | **4. Start the WebGUI server** | 1. Press **Right Shift** to open the Meteor GUI.<br>2. Open the **WebGUI** tab.<br>3. Configure **Host** (default `127.0.0.1`) and **Port** (default `8080`) plus **Auto Start** if desired.<br>4. Click **Start Server**.<br><br>Log output:<br><pre>[Meteor WebGUI] Starting WebGUI server on 127.0.0.1:8080<br>[Meteor WebGUI] Event monitoring started for N modules<br>[Meteor WebGUI] Access the WebGUI at: http://127.0.0.1:8080</pre> |
 | **5. Open the interface** | **Production** – Visit `http://127.0.0.1:8080` (or your configured host/port). Static assets and the `/ws` WebSocket endpoint are served by the addon itself.<br><br>**Development** – For hot reloading, run:<br><pre>cd webui<br>npm install<br>npm run dev</pre><br>Visit `http://localhost:3000`. Vite proxies `/ws` to `localhost:8080`, so the development UI still talks to the in-game server. |
 

@@ -43,6 +43,7 @@ dependencies {
     // Testing
     testImplementation(libs.junit.api)
     testRuntimeOnly(libs.junit.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 tasks {
@@ -85,26 +86,33 @@ tasks {
         useJUnitPlatform()
     }
 
+    // Install WebUI dependencies
+    register<Exec>("installWebUI") {
+        group = "build"
+        description = "Install Vue.js WebUI dependencies"
+
+        val webuiDir = file("webui")
+        val npmCommand = if (System.getProperty("os.name").lowercase().contains("windows")) "npm.cmd" else "npm"
+
+        workingDir = webuiDir
+        commandLine(npmCommand, "install")
+
+        onlyIf {
+            !file("webui/node_modules").exists()
+        }
+    }
+
     // Build WebUI with npm
     register<Exec>("buildWebUI") {
         group = "build"
         description = "Build the Vue.js WebUI"
+        dependsOn("installWebUI")
 
         val webuiDir = file("webui")
         val npmCommand = if (System.getProperty("os.name").lowercase().contains("windows")) "npm.cmd" else "npm"
 
         workingDir = webuiDir
         commandLine(npmCommand, "run", "build")
-
-        // Install dependencies first if node_modules doesn't exist
-        doFirst {
-            if (!file("webui/node_modules").exists()) {
-                exec {
-                    workingDir = webuiDir
-                    commandLine(npmCommand, "install")
-                }
-            }
-        }
     }
 
     // Copy built WebUI to resources

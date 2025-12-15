@@ -23,7 +23,10 @@
       "Bash(./gradlew clean:*)",
       "Bash(dir \"C:\\Users\\Cope\\Documents\\GitHub\\meteor-client-webgui\\build\\libs\")",
       "Bash(powershell -Command \"(Get-Item ''C:\\Users\\Cope\\Documents\\GitHub\\meteor-client-webgui\\build\\libs\\meteor-webgui-0.1.0.jar'').Length / 1MB\")",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Skill(minecraft-fabric-dev)",
+      "WebFetch(domain:maven.meteordev.org)",
+      "Bash(mcp__desktop-notifications__send-notification)"
     ],
     "deny": [],
     "ask": []

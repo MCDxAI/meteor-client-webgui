@@ -18,7 +18,9 @@ This skill provides guidance for developing addons for Meteor Client, a Fabric-b
 1. **Setup**: Start from the template or clone existing addon
 2. **Update Check**: Verify template is current with Meteor/Minecraft versions
 3. **Development**: Implement features following Meteor patterns
-4. **Reference**: Find examples from verified addons when needed
+4. **Reference**: Use filter_addons.py to find examples from verified addons when needed
+
+When you need to find reference implementations, always use the filter_addons.py script to search the addon database rather than manually browsing GitHub or guessing repository URLs.
 
 ## Starting a New Addon
 
@@ -68,18 +70,47 @@ git clone --depth=1 https://github.com/MeteorDevelopment/meteor-client
 
 ## Finding Reference Implementations
 
-Use the addon database to find high-quality examples:
+The addon database contains metadata about all known Meteor Client addons. Use the filter_addons.py script to find high-quality examples for reference.
+
+### Basic Usage
 
 ```bash
-# Find verified addons for current Minecraft version
-python scripts/filter_addons.py --mc-version 1.21.1 --verified
+# Find verified addons for a specific Minecraft version
+python scripts/filter_addons.py --mc-version 1.21.11 --verified
 
-# Find addons with specific features
-python scripts/filter_addons.py --feature-type modules --feature-name "ExampleModule"
+# Find all addons for a version (including unverified)
+python scripts/filter_addons.py --mc-version 1.21.11 --no-verified
 
-# Get JSON output for cloning
-python scripts/filter_addons.py --mc-version 1.21.1 --verified --json
+# Limit results
+python scripts/filter_addons.py --mc-version 1.21.11 --verified --limit 10
+
+# Get JSON output for programmatic use
+python scripts/filter_addons.py --mc-version 1.21.11 --verified --json
 ```
+
+### Advanced Filtering
+
+```bash
+# Find addons with specific features
+python scripts/filter_addons.py --feature-type modules --feature-name "AutoTotem"
+
+# Filter by minimum stars
+python scripts/filter_addons.py --mc-version 1.21.11 --min-stars 50
+
+# Sort by different criteria
+python scripts/filter_addons.py --mc-version 1.21.11 --sort-by last_update
+
+# Include archived repositories (normally excluded)
+python scripts/filter_addons.py --mc-version 1.21.11 --include-archived
+```
+
+### Important Notes
+
+1. **supported_versions field**: Some addons list multiple compatible versions in their custom.supported_versions field. The filter script checks both mc_version and supported_versions when filtering.
+
+2. **None handling**: The addon database may contain null values for features lists or supported_versions. The filter script handles these gracefully.
+
+3. **Default behavior**: Without --no-verified, the script only shows verified addons by default.
 
 ### Quality Filtering Rules
 
@@ -154,15 +185,24 @@ If working with older Minecraft/Meteor versions:
 
 ### Can't Find Version-Compatible Examples
 
-1. Remove `--verified` flag temporarily (less ideal but may be necessary)
-2. Sort by `--sort-by last_update` to find recently maintained addons
-3. Check meteor-client source directly for official examples
+1. Check if the version exists in the database: `python scripts/filter_addons.py --mc-version X.XX.XX --no-verified`
+2. Remove --verified flag temporarily (less ideal but may be necessary)
+3. Sort by --sort-by last_update to find recently maintained addons
+4. Check meteor-client source directly for official examples
 
 ### Need Specific Feature Implementation
 
-1. Search by feature type: `--feature-type modules --feature-name YourFeature`
+1. Search by feature type: `python scripts/filter_addons.py --feature-type modules --feature-name YourFeature`
 2. Look at multiple implementations for best practices
 3. Clone top 3-5 verified addons for comparison
+
+### Script Issues
+
+If filter_addons.py encounters errors:
+- Ensure you have internet connectivity (script fetches from GitHub)
+- Check that Python 3 is installed and available
+- The script handles None values gracefully, but very old addon entries may have unexpected data formats
+- If a specific addon looks corrupted, use --limit to skip past it
 
 ## Best Practices
 

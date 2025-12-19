@@ -2,31 +2,33 @@
   <div class="int-setting">
     <div class="setting-header">
       <span class="setting-title">{{ setting.title }}</span>
-      <span class="setting-value">{{ setting.value.value }}</span>
+      <span class="setting-value" :class="{ clamped: wasClamped }">{{ setting.value.value }}</span>
     </div>
     <p class="setting-description">{{ setting.description }}</p>
 
     <input
       v-if="!setting.typeMetadata?.noSlider"
       type="range"
-      :min="setting.typeMetadata?.sliderMin || setting.typeMetadata?.min || 0"
-      :max="setting.typeMetadata?.sliderMax || setting.typeMetadata?.max || 100"
+      :min="sliderMin"
+      :max="sliderMax"
       :value="setting.value.value"
-      @input="updateValue(parseInt($event.target.value))"
+      @input="updateValue(parseInt(($event.target as HTMLInputElement).value))"
     />
 
     <input
       type="number"
-      :min="setting.typeMetadata?.min"
-      :max="setting.typeMetadata?.max"
+      :min="getMin()"
+      :max="getMax()"
       :value="setting.value.value"
-      @input="updateValue(parseInt($event.target.value))"
+      @input="updateValue(parseInt(($event.target as HTMLInputElement).value))"
       class="number-input"
+      :class="{ clamped: wasClamped }"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import type { ModuleInfo, SettingMetadata } from '../../stores/modules'
 import { useWebSocketStore } from '../../stores/websocket'
 
@@ -36,16 +38,59 @@ const props = defineProps<{
 }>()
 
 const wsStore = useWebSocketStore()
+const wasClamped = ref(false)
+
+function getMin(): number {
+  return props.setting.typeMetadata?.min ?? -999999999
+}
+
+function getMax(): number {
+  return props.setting.typeMetadata?.max ?? 999999999
+}
+
+// Slider range that expands to include the current value
+// This fixes the issue where Meteor's default sliderMin/sliderMax (0-10) is too narrow
+const sliderMin = computed(() => {
+  const metaSliderMin = props.setting.typeMetadata?.sliderMin ?? 0
+  const currentValue = props.setting.value?.value ?? 0
+  const absoluteMin = getMin()
+
+  // Expand slider min to include current value, but never go below absolute min
+  return Math.max(absoluteMin, Math.min(metaSliderMin, currentValue))
+})
+
+const sliderMax = computed(() => {
+  const metaSliderMax = props.setting.typeMetadata?.sliderMax ?? 100
+  const currentValue = props.setting.value?.value ?? 0
+  const absoluteMax = getMax()
+
+  // Expand slider max to include current value, but never go above absolute max
+  return Math.min(absoluteMax, Math.max(metaSliderMax, currentValue))
+})
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
+}
 
 function updateValue(value: number) {
   if (isNaN(value)) return
+
+  const min = getMin()
+  const max = getMax()
+  const clampedValue = clamp(value, min, max)
+
+  // Show feedback if value was clamped
+  if (clampedValue !== value) {
+    wasClamped.value = true
+    setTimeout(() => { wasClamped.value = false }, 1000)
+  }
 
   wsStore.send({
     type: 'setting.update',
     data: {
       moduleName: props.module.name,
       settingName: props.setting.name,
-      value: { value }
+      value: { value: clampedValue }
     }
   })
 }
@@ -104,5 +149,15 @@ input[type="range"]::-webkit-slider-thumb {
   border: 1px solid #444;
   border-radius: 4px;
   font-size: 0.875rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.number-input.clamped {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+.setting-value.clamped {
+  color: #f59e0b;
 }
 </style>

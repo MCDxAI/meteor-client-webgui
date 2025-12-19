@@ -75,14 +75,14 @@ def filter_addons(
         # Minecraft version match
         if mc_version:
             addon_mc_version = addon.get("mc_version", "")
-            supported_versions = addon.get("custom", {}).get("supported_versions", [])
+            supported_versions = addon.get("custom", {}).get("supported_versions") or []
             
             if mc_version not in [addon_mc_version] + supported_versions:
                 continue
         
         # Feature filtering
         if feature_type and feature_name:
-            features = addon.get("features", {}).get(feature_type, [])
+            features = addon.get("features", {}).get(feature_type) or []
             if feature_name not in features:
                 continue
         
@@ -109,7 +109,7 @@ def format_addon_summary(addon: Dict[str, Any]) -> str:
     name = addon.get("name", "Unknown")
     desc = addon.get("description", "No description")
     mc_version = addon.get("mc_version", "Unknown")
-    verified = "✓" if addon.get("verified", False) else "✗"
+    verified = "[VERIFIED]" if addon.get("verified", False) else "[UNVERIFIED]"
     
     repo = addon.get("repo", {})
     stars = repo.get("stars", 0)
@@ -118,12 +118,12 @@ def format_addon_summary(addon: Dict[str, Any]) -> str:
     github_url = addon.get("links", {}).get("github", "")
     
     features = addon.get("features", {})
-    module_count = len(features.get("modules", []))
-    command_count = len(features.get("commands", []))
-    hud_count = len(features.get("hud_elements", []))
+    module_count = len(features.get("modules", []) or [])
+    command_count = len(features.get("commands", []) or [])
+    hud_count = len(features.get("hud_elements", []) or [])
     
     return f"""
-{name} [{verified} Verified]
+{name} {verified}
   MC Version: {mc_version}
   Repository: {owner}/{repo_name}
   Stars: {stars}

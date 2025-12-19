@@ -25,7 +25,7 @@ Meteor WebGUI is a Meteor Client addon that provides a web-based GUI with real-t
 ./gradlew clean
 ```
 
-Output JAR: `build/libs/meteor-webgui-0.1.0.jar`
+Output JAR: `build/libs/meteor-webgui-0.3.0.jar`
 
 ### WebUI Development
 ```bash
@@ -44,21 +44,40 @@ npm run build
 ```
 
 ### Testing the Full Stack
+
+**Development Mode (with Vite hot-reload):**
 1. Start Minecraft with the addon: `./gradlew runClient`
 2. In-game: Open Meteor GUI (Right Shift) → WebGUI tab → Start Server
 3. In separate terminal: `cd webui && npm run dev`
-4. Open browser: `http://localhost:3000`
+4. Open browser: `http://localhost:3000` (Vite dev server)
+
+**Production Mode (served from addon):**
+1. Build WebUI: `cd webui && npm run build`
+2. Start Minecraft: `./gradlew runClient`
+3. In-game: Open Meteor GUI (Right Shift) → WebGUI tab → Start Server
+4. Open browser: `http://localhost:8080` (served from addon's HTTP server)
 
 ## Key Architecture Concepts
 
 ### Bi-Directional Sync Architecture
 The addon maintains real-time synchronization between Minecraft and the web interface:
+- **HTTP Server**: Serves the built WebUI from `webui/dist/` on port 8080 (production mode)
+- **WebSocket Server**: Real-time bidirectional communication on port 8080 (same port, different protocol)
 - **Java → WebUI**: Event monitoring broadcasts module/setting changes via WebSocket
 - **WebUI → Java**: User interactions send commands to modify game state
 - **Initial State**: Full module/settings snapshot sent on WebSocket connection
+- **HUD Preview**: Periodic snapshots of HUD elements sent to WebUI for real-time preview
 
 ### Module Mapping System
 The `ModuleMapper` class (src/main/java/com/cope/meteorwebgui/mapping/) dynamically discovers ALL modules from Meteor Client and installed addons at runtime. It does NOT require manual registration - it automatically iterates through `Modules.get().getAll()` and maps each module by category.
+
+### HUD Mapping System
+The `HudMapper` class provides dynamic discovery and preview of HUD elements:
+- Iterates through all HUD elements from Meteor Client and addons
+- Captures real-time text content from each HUD element
+- Generates preview snapshots showing what will be rendered in-game
+- Supports toggling HUD element visibility from the WebUI
+- Uses mixins to hook into HUD lifecycle and rendering events
 
 ### Settings Reflection System
 The `SettingsReflector` class provides generic read/write access to any Meteor setting type via reflection. It:
@@ -89,29 +108,29 @@ interface WSMessage {
 - `initial.state`: Full module/settings state on connection
 - `module.state.changed`: Module toggled
 - `setting.value.changed`: Setting value changed
+- `hud.snapshot`: HUD preview snapshot with rendered text lines
+- `hud.list`: List of all available HUD elements
 
 **Client → Server Commands:**
 - `module.toggle`: Toggle module on/off
 - `setting.update`: Update setting value
 - `module.list`: Request full module list
+- `hud.list`: Request HUD elements list
+- `hud.toggle`: Toggle HUD element visibility
 
 ## Critical References
 
 ### ai_reference Folder
 **IMPORTANT**: The `ai_reference/` folder (git-ignored) contains high-quality example sources for Meteor Client addon development. **ALWAYS read `ai_reference/INDEX.md` first** when working on Meteor-specific features.
 
-This folder includes:
-- **meteor-client**: Core framework, base classes, event system, module examples
-- **meteor-rejects**, **MeteorPlus**, **meteor-villager-roller**: Reference addon implementations
-- **orbit**: Event system architecture
-- **starscript**: Expression language for dynamic text
+The INDEX.md file contains:
+- Complete catalog of all reference repositories
+- Quick lookup guide for specific features (modules, settings, commands, HUD, etc.)
+- Repository details with star counts, update dates, and feature lists
+- Usage guidelines and research strategies
+- Best practices for finding relevant implementation examples
 
-Use these references to understand:
-- How to properly extend Meteor classes (Module, System, Command)
-- Event handler patterns and priorities
-- Setting types and usage patterns
-- GUI/screen implementations
-- Utility class usage (EntityUtils, BlockUtils, ChatUtils, etc.)
+All reference addons are verified and compatible with Minecraft 1.21.11 and Meteor Client 1.21.11.
 
 ### ai_docs Folder
 The `ai_docs/` folder contains detailed technical documentation about the project architecture and Meteor Client integration:
@@ -143,10 +162,16 @@ The `ai_docs/` folder contains detailed technical documentation about the projec
 src/main/java/com/cope/meteorwebgui/
 ├── MeteorWebGUIAddon.java       # Entry point, server lifecycle management
 ├── server/
-│   └── MeteorWebServer.java     # WebSocket server implementation
+│   ├── MeteorHTTPServer.java    # HTTP server for serving static files
+│   ├── MeteorWebServer.java     # WebSocket server implementation
+│   ├── MeteorWebSocket.java     # WebSocket connection wrapper
+│   └── MeteorWebSocketHandler.java # WebSocket message handler
 ├── mapping/
 │   ├── ModuleMapper.java        # Dynamic module discovery
-│   └── SettingsReflector.java   # Generic settings reflection
+│   ├── HudMapper.java           # HUD element mapping
+│   ├── SettingsReflector.java   # Generic settings reflection
+│   ├── SettingType.java         # Setting type enumeration
+│   └── RegistryProvider.java    # Minecraft registry access
 ├── events/
 │   └── EventMonitor.java        # Real-time event broadcasting
 ├── protocol/
@@ -154,8 +179,18 @@ src/main/java/com/cope/meteorwebgui/
 │   └── MessageType.java         # Message type enum
 ├── systems/
 │   └── WebGUIConfig.java        # Persistent config (port, host, auto-start)
-└── gui/
-    └── WebGUITab.java           # In-game configuration tab
+├── gui/
+│   └── WebGUITab.java           # In-game configuration tab
+├── hud/
+│   ├── HudPreviewService.java   # HUD preview rendering
+│   ├── HudPreviewCapture.java   # HUD screen capture
+│   ├── HudPreviewSnapshot.java  # HUD snapshot data
+│   └── HudTextLine.java         # HUD text line model
+├── mixin/
+│   ├── HudMixin.java            # HUD lifecycle hooks
+│   └── HudRendererMixin.java    # HUD rendering hooks
+└── util/
+    └── (utility classes)
 ```
 
 ## Frontend Structure
@@ -166,27 +201,54 @@ webui/src/
 ├── App.vue                      # Root component
 ├── stores/
 │   ├── modules.ts               # Pinia store for module state
-│   └── websocket.ts             # WebSocket connection management
+│   ├── websocket.ts             # WebSocket connection management
+│   └── hud.ts                   # HUD state management
 └── components/
     ├── ModuleList.vue           # Category-organized module list
     ├── ModuleCard.vue           # Individual module card
+    ├── ModuleCardCompact.vue    # Compact module card view
+    ├── ModuleSettingsDialog.vue # Modal for module settings
+    ├── ModuleToolbar.vue        # Module toolbar controls
     ├── SettingsPanel.vue        # Settings display
+    ├── layout/                  # Layout components
+    ├── modals/                  # Modal dialogs
+    ├── ui/                      # Reusable UI components
+    ├── hud/                     # HUD-related components
     └── settings/                # Type-specific setting components
         ├── BoolSetting.vue
         ├── IntSetting.vue
         ├── DoubleSetting.vue
         ├── StringSetting.vue
-        └── EnumSetting.vue
+        ├── StringListSetting.vue
+        ├── EnumSetting.vue
+        ├── ColorSetting.vue
+        ├── KeybindSetting.vue
+        ├── BlockPosSetting.vue
+        ├── Vector3dSetting.vue
+        ├── BlockListSetting.vue
+        ├── ItemListSetting.vue
+        ├── EntityTypeListSetting.vue
+        ├── ColorListSetting.vue
+        ├── ModuleListSetting.vue
+        ├── PotionSetting.vue
+        ├── StatusEffectAmplifierMapSetting.vue
+        ├── FontFaceSetting.vue
+        ├── RegistryValueSetting.vue
+        ├── GenericListSetting.vue
+        └── GenericSetting.vue
 ```
 
 ## Dependencies
 
-### Java (build.gradle.kts)
-- **Minecraft**: 1.21.10
-- **Fabric Loader**: 0.17.3
-- **Meteor Client**: 1.21.10-32 (local JAR in `libs/`)
-- **Java-WebSocket**: 1.5.7 (for WebSocket server)
-- **Gson**: 2.11.0 (for JSON serialization)
+Dependencies are managed via `gradle/libs.versions.toml`:
+
+### Java
+- **Minecraft**: 1.21.11
+- **Fabric Loader**: 0.18.2
+- **Meteor Client**: 1.21.11-SNAPSHOT (from Maven)
+- **Orbit**: 0.2.4 (event system)
+- **NanoHTTPD**: 2.3.1 (HTTP and WebSocket server)
+- **Gson**: 2.11.0 (JSON serialization)
 
 ### Frontend (webui/package.json)
 - **Vue**: 3.5.13 (reactive framework)
@@ -247,27 +309,32 @@ server.broadcast(gson.toJson(msg));
 
 ## Current Implementation Status
 
-✅ **Working:**
+✅ **Fully Working:**
 - Module listing by category
 - Module toggle (on/off)
 - Real-time module state sync
-- Basic settings: Bool, Int, Double, String, Enum
-- WebSocket auto-reconnect
-- Connection status indicator
+- WebSocket auto-reconnect with connection status indicator
+- HUD element preview and rendering
+- **Primitive Settings:** Bool, Int, Double, String, StringList, Enum
+- **Visual Settings:** Color, ColorList, Keybind, FontFace
+- **Spatial Settings:** BlockPos, Vector3d
+- **Registry Settings:** Block, Item, EntityType, Potion, StatusEffectAmplifierMap
+- **List Settings:** BlockList, ItemList, EntityTypeList, ModuleList, GenericList
+- **Advanced Settings:** RegistryValue, Generic fallback
 
-🚧 **Read-Only (Not Yet Editable):**
-- Color settings
-- Keybind settings
-- List settings (blocks, items, entities)
-- Complex settings (BlockPos, Vector3d, Map)
+🎨 **UI Features:**
+- Compact and expanded module card views
+- Modal dialogs for module settings
+- Module toolbar with search and filters
+- Real-time HUD preview snapshots
 
-See `ai_docs/ARCHITECTURE.md` Phase 3-5 for planned features.
+See `ai_docs/ARCHITECTURE.md` for architecture details and future enhancements.
 
 ## Troubleshooting Tips
 
 ### "Cannot find Meteor classes" compilation error
-- Ensure `libs/meteor-client-1.21.10-32.jar` exists
-- Run `./gradlew clean build`
+- Gradle will automatically fetch Meteor Client from Maven
+- Run `./gradlew clean build --refresh-dependencies`
 
 ### WebSocket connection fails
 - Check server is running in Meteor GUI → WebGUI tab

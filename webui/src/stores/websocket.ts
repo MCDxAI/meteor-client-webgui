@@ -105,6 +105,11 @@ export const useWebSocketStore = defineStore('websocket', () => {
         if (message.data.hud) {
           hudStore.setInitialState(message.data.hud)
         }
+        // Set favorites from backend (Meteor is source of truth)
+        if (message.data.favorites) {
+          modulesStore.setFavorites(message.data.favorites)
+          console.log('Favorites loaded:', message.data.favorites.length)
+        }
         // Store registry data
         if (message.data.registries) {
           registries.value = message.data.registries
@@ -125,6 +130,10 @@ export const useWebSocketStore = defineStore('websocket', () => {
           message.data.settingName,
           message.data.value
         )
+        break
+
+      case 'favorites.state.changed':
+        modulesStore.setFavorites(message.data.favorites)
         break
 
       case 'registry.data':
@@ -202,6 +211,13 @@ export const useWebSocketStore = defineStore('websocket', () => {
     })
   }
 
+  function sendFavoritesUpdate(favorites: string[]) {
+    send({
+      type: 'favorites.update',
+      data: { favorites }
+    })
+  }
+
   return {
     connected,
     reconnecting,
@@ -210,6 +226,7 @@ export const useWebSocketStore = defineStore('websocket', () => {
     connect,
     disconnect,
     send,
-    requestRegistry
+    requestRegistry,
+    sendFavoritesUpdate
   }
 })

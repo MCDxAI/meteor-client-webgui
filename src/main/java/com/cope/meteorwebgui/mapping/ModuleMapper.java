@@ -141,4 +141,46 @@ public class ModuleMapper {
         data.add("value", SettingsReflector.getSettingValue(setting, SettingsReflector.detectSettingType(setting)));
         return data;
     }
+
+    /**
+     * Get list of all favorite module names
+     */
+    public static JsonArray getFavorites() {
+        JsonArray favorites = new JsonArray();
+        try {
+            for (Module module : Modules.get().getAll()) {
+                if (module.favorite) {
+                    favorites.add(module.name);
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to get favorites: {}", e.getMessage(), e);
+        }
+        return favorites;
+    }
+
+    /**
+     * Set favorites from a list of module names
+     * @param favoriteNames List of module names to mark as favorites
+     */
+    public static void setFavorites(List<String> favoriteNames) {
+        try {
+            Set<String> favoriteSet = new HashSet<>(favoriteNames);
+            for (Module module : Modules.get().getAll()) {
+                module.favorite = favoriteSet.contains(module.name);
+            }
+            LOG.info("Updated favorites: {} modules marked as favorite", favoriteNames.size());
+        } catch (Exception e) {
+            LOG.error("Failed to set favorites: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Create favorites state changed message
+     */
+    public static JsonObject createFavoritesStateMessage() {
+        JsonObject data = new JsonObject();
+        data.add("favorites", getFavorites());
+        return data;
+    }
 }

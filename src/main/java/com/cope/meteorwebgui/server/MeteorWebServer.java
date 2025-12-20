@@ -133,6 +133,21 @@ public class MeteorWebServer {
         }
     }
 
+    /**
+     * Broadcast favorites state change to all connected clients.
+     */
+    public void broadcastFavoritesChanged() {
+        if (!running) return;
+        try {
+            JsonObject data = ModuleMapper.createFavoritesStateMessage();
+            WSMessage message = new WSMessage(MessageType.FAVORITES_STATE_CHANGED, data);
+            webSocketHandler.broadcast(GSON.toJson(message));
+            LOG.debug("Broadcast favorites change: {} favorites", data.getAsJsonArray("favorites").size());
+        } catch (Exception e) {
+            LOG.error("Failed to broadcast favorites change: {}", e.getMessage(), e);
+        }
+    }
+
     public void broadcast(String jsonPayload) {
         if (!running || webSocketHandler == null) return;
         try {

@@ -47,7 +47,8 @@ const toggling = ref(false)
 const isFavorite = computed(() => modulesStore.isFavorite(props.module.name))
 
 function toggleFavorite() {
-  modulesStore.toggleFavorite(props.module.name)
+  const newFavorites = modulesStore.toggleFavorite(props.module.name)
+  wsStore.sendFavoritesUpdate(newFavorites)
 }
 
 function toggleModule() {

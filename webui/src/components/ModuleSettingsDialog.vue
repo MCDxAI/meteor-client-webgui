@@ -100,7 +100,8 @@ function toggleModule() {
 
 function toggleFavorite() {
   if (!props.module) return
-  modulesStore.toggleFavorite(props.module.name)
+  const newFavorites = modulesStore.toggleFavorite(props.module.name)
+  wsStore.sendFavoritesUpdate(newFavorites)
 }
 
 function onKeyDown(event: KeyboardEvent) {

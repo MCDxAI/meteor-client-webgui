@@ -27,6 +27,7 @@ public class EventMonitor {
     private final MeteorWebServer server;
     private final Map<Setting<?>, Consumer<?>> originalCallbacks = new HashMap<>();
     private final Map<String, Boolean> moduleStates = new HashMap<>();
+    private final Map<String, Boolean> favoriteStates = new HashMap<>();
     private final Map<String, Boolean> hudStates = new HashMap<>();
 
     public EventMonitor(MeteorWebServer server) {
@@ -42,6 +43,7 @@ public class EventMonitor {
         // Monitor all existing modules and initialize state tracking
         for (Module module : Modules.get().getAll()) {
             moduleStates.put(module.name, module.isActive());
+            favoriteStates.put(module.name, module.favorite);
             monitorModuleSettings(module);
         }
 
@@ -54,11 +56,15 @@ public class EventMonitor {
      * Handle module toggle events
      * ActiveModulesChangedEvent is a singleton event that fires whenever any module toggles,
      * but doesn't tell us which one. So we compare current state to our tracked state.
+     * We also check for favorite changes here since there's no dedicated event for them.
      */
     @EventHandler
     private void onModuleToggle(ActiveModulesChangedEvent event) {
+        boolean favoritesChanged = false;
+
         // Find which module(s) changed state
         for (Module module : Modules.get().getAll()) {
+            // Check active state
             Boolean previousState = moduleStates.get(module.name);
             boolean currentState = module.isActive();
 
@@ -71,6 +77,21 @@ public class EventMonitor {
                     LOG.debug("Module state changed: {} -> {}", module.name, currentState);
                 }
             }
+
+            // Check favorite state
+            Boolean previousFavorite = favoriteStates.get(module.name);
+            boolean currentFavorite = module.favorite;
+
+            if (previousFavorite == null || previousFavorite != currentFavorite) {
+                favoriteStates.put(module.name, currentFavorite);
+                favoritesChanged = true;
+                LOG.debug("Module favorite changed: {} -> {}", module.name, currentFavorite);
+            }
+        }
+
+        // Broadcast favorites change if any module's favorite status changed
+        if (favoritesChanged && server.isRunning()) {
+            server.broadcastFavoritesChanged();
         }
     }
 
@@ -202,6 +223,8 @@ public class EventMonitor {
         LOG.info("Stopping event monitoring");
         // Could restore original callbacks here if needed
         originalCallbacks.clear();
+        moduleStates.clear();
+        favoriteStates.clear();
         hudStates.clear();
     }
 }

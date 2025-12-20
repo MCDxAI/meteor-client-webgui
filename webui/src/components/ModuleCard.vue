@@ -83,7 +83,8 @@ function handleCardToggle() {
 }
 
 function toggleFavorite() {
-  modulesStore.toggleFavorite(props.module.name)
+  const newFavorites = modulesStore.toggleFavorite(props.module.name)
+  wsStore.sendFavoritesUpdate(newFavorites)
 }
 </script>
 

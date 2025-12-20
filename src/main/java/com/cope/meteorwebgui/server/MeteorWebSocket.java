@@ -41,6 +41,7 @@ public class MeteorWebSocket extends NanoWSD.WebSocket {
             JsonObject initialData = new JsonObject();
             initialData.add("modules", ModuleMapper.mapAllModulesByCategory());
             initialData.add("hud", HudMapper.mapHudState());
+            initialData.add("favorites", ModuleMapper.getFavorites());
 
             // Registry data is now loaded on-demand via REGISTRY_REQUEST
             WSMessage message = new WSMessage(MessageType.INITIAL_STATE, initialData);
@@ -76,6 +77,7 @@ public class MeteorWebSocket extends NanoWSD.WebSocket {
                 case MODULE_LIST -> handleModuleList(wsMessage);
                 case SETTING_UPDATE -> handleSettingUpdate(wsMessage);
                 case SETTING_GET -> handleSettingGet(wsMessage);
+                case FAVORITES_UPDATE -> handleFavoritesUpdate(wsMessage);
                 case REGISTRY_REQUEST -> handleRegistryRequest(wsMessage);
                 case HUD_TOGGLE -> handleHudToggle(wsMessage);
                 case PING -> handlePing(wsMessage);
@@ -271,6 +273,32 @@ public class MeteorWebSocket extends NanoWSD.WebSocket {
         } catch (Exception e) {
             LOG.error("Failed to toggle HUD element: {}", e.getMessage(), e);
             sendError("Failed to toggle HUD element: " + e.getMessage(), message.getId());
+        }
+    }
+
+    private void handleFavoritesUpdate(WSMessage message) {
+        try {
+            JsonObject data = message.getData().getAsJsonObject();
+            java.util.List<String> favorites = new java.util.ArrayList<>();
+
+            if (data.has("favorites") && data.get("favorites").isJsonArray()) {
+                for (var element : data.getAsJsonArray("favorites")) {
+                    favorites.add(element.getAsString());
+                }
+            }
+
+            ModuleMapper.setFavorites(favorites);
+
+            JsonObject response = new JsonObject();
+            response.addProperty("success", true);
+            response.add("favorites", ModuleMapper.getFavorites());
+
+            send(GSON.toJson(new WSMessage("response", response, message.getId())));
+
+            LOG.info("Updated favorites from WebUI: {} modules", favorites.size());
+        } catch (Exception e) {
+            LOG.error("Failed to update favorites: {}", e.getMessage(), e);
+            sendError("Failed to update favorites: " + e.getMessage(), message.getId());
         }
     }
 

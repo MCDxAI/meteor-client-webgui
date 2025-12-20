@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 
 export interface ModuleInfo {
   name: string
@@ -32,34 +32,6 @@ export const useModulesStore = defineStore('modules', () => {
   const loading = ref(true)
   const error = ref<string | null>(null)
   const favorites = ref<string[]>([])
-  const FAVORITES_KEY = 'meteor-client:favorites'
-
-  function hydrateFavorites() {
-    if (typeof window === 'undefined') return
-    try {
-      const stored = window.localStorage.getItem(FAVORITES_KEY)
-      if (!stored) return
-      const parsed = JSON.parse(stored)
-      if (Array.isArray(parsed)) {
-        favorites.value = Array.from(
-          new Set(parsed.filter((value): value is string => typeof value === 'string'))
-        )
-      }
-    } catch (err) {
-      console.warn('Failed to parse favorites from storage', err)
-    }
-  }
-
-  hydrateFavorites()
-
-  watch(
-    favorites,
-    (value) => {
-      if (typeof window === 'undefined') return
-      window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(value))
-    },
-    { deep: true }
-  )
 
   const activeModules = computed(() => {
     const active: string[] = []
@@ -120,7 +92,18 @@ export const useModulesStore = defineStore('modules', () => {
     }
   }
 
-  function toggleFavorite(moduleName: string) {
+  /**
+   * Set favorites from backend (Meteor is source of truth)
+   */
+  function setFavorites(favoriteNames: string[]) {
+    favorites.value = Array.from(new Set(favoriteNames))
+  }
+
+  /**
+   * Toggle a module's favorite status (optimistic update)
+   * Returns the new favorites array for sending to backend
+   */
+  function toggleFavorite(moduleName: string): string[] {
     const next = new Set(favorites.value)
     if (next.has(moduleName)) {
       next.delete(moduleName)
@@ -128,6 +111,7 @@ export const useModulesStore = defineStore('modules', () => {
       next.add(moduleName)
     }
     favorites.value = Array.from(next)
+    return favorites.value
   }
 
   function isFavorite(moduleName: string) {
@@ -153,6 +137,7 @@ export const useModulesStore = defineStore('modules', () => {
     setInitialState,
     updateModuleState,
     updateSettingValue,
+    setFavorites,
     getModule,
     toggleFavorite,
     isFavorite

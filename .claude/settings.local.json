@@ -26,7 +26,11 @@
       "Bash(dir:*)",
       "Skill(minecraft-fabric-dev)",
       "WebFetch(domain:maven.meteordev.org)",
-      "Bash(mcp__desktop-notifications__send-notification)"
+      "Bash(mcp__desktop-notifications__send-notification)",
+      "Skill(meteor-addon)",
+      "Bash(python:*)",
+      "Bash(git clone:*)",
+      "Bash(npx vue-tsc:*)"
     ],
     "deny": [],
     "ask": []

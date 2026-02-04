@@ -31,14 +31,11 @@ dependencies {
     compileOnly(libs.orbit)
 
     // NanoHTTPD for HTTP server and WebSocket support
-    modImplementation(libs.nanohttpd.core)
-    include(libs.nanohttpd.core)
-    modImplementation(libs.nanohttpd.websocket)
-    include(libs.nanohttpd.websocket)
+    include(modImplementation(libs.nanohttpd.core.get())!!)
+    include(modImplementation(libs.nanohttpd.websocket.get())!!)
 
     // JSON serialization for WebSocket messages
-    modImplementation(libs.gson)
-    include(libs.gson)
+    include(modImplementation(libs.gson.get())!!)
 
     // Testing
     testImplementation(libs.junit.api)

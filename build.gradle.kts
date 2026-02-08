@@ -1,5 +1,16 @@
+import org.gradle.api.artifacts.MinimalExternalModuleDependency
+import org.gradle.api.provider.Provider
+import org.gradle.kotlin.dsl.DependencyHandlerScope
+
 plugins {
     alias(libs.plugins.fabric.loom)
+}
+
+fun DependencyHandlerScope.modInclude(
+    dependencyProvider: Provider<out MinimalExternalModuleDependency>,
+) {
+    modImplementation(dependencyProvider)
+    include(dependencyProvider)
 }
 
 base {
@@ -31,14 +42,11 @@ dependencies {
     compileOnly(libs.orbit)
 
     // NanoHTTPD for HTTP server and WebSocket support
-    modImplementation(libs.nanohttpd.core)
-    include(libs.nanohttpd.core)
-    modImplementation(libs.nanohttpd.websocket)
-    include(libs.nanohttpd.websocket)
+    modInclude(libs.nanohttpd.core)
+    modInclude(libs.nanohttpd.websocket)
 
     // JSON serialization for WebSocket messages
-    modImplementation(libs.gson)
-    include(libs.gson)
+    modInclude(libs.gson)
 
     // Testing
     testImplementation(libs.junit.api)

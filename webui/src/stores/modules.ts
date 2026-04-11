@@ -76,18 +76,27 @@ export const useModulesStore = defineStore('modules', () => {
     }
   }
 
-  function updateSettingValue(moduleName: string, settingName: string, value: any) {
+  function updateSettingValue(
+    moduleName: string,
+    settingName: string,
+    value: any,
+    visibility?: Record<string, boolean>
+  ) {
     // Find the module and update the setting
     for (const category in byCategory.value) {
       const module = byCategory.value[category].find(m => m.name === moduleName)
       if (module && module.settingGroups) {
         for (const group of module.settingGroups) {
-          const setting = group.settings.find(s => s.name === settingName)
-          if (setting) {
-            setting.value = value
-            return
+          for (const setting of group.settings) {
+            if (setting.name === settingName) {
+              setting.value = value
+            }
+            if (visibility && Object.prototype.hasOwnProperty.call(visibility, setting.name)) {
+              setting.visible = Boolean(visibility[setting.name])
+            }
           }
         }
+        return
       }
     }
   }

@@ -132,6 +132,17 @@ public final class HudMapper {
         data.addProperty("elementName", getElementIdentifier(element));
         data.addProperty("settingName", setting.name);
         data.add("value", SettingsReflector.getSettingValue(setting, SettingsReflector.detectSettingType(setting)));
+        data.add("visibility", createSettingVisibilityMap(element));
         return data;
+    }
+
+    private static JsonObject createSettingVisibilityMap(HudElement element) {
+        JsonObject visibility = new JsonObject();
+        for (SettingGroup group : element.settings) {
+            for (Setting<?> setting : group) {
+                visibility.addProperty(setting.name, setting.isVisible());
+            }
+        }
+        return visibility;
     }
 }

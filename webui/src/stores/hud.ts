@@ -99,14 +99,22 @@ export const useHudStore = defineStore('hud', () => {
     if (typeof payload.height === 'number') element.height = payload.height
   }
 
-  function updateSettingValue(elementName: string, settingName: string, value: any) {
+  function updateSettingValue(
+    elementName: string,
+    settingName: string,
+    value: any,
+    visibility?: Record<string, boolean>
+  ) {
     const element = elements.value[elementName]
     if (!element?.settingGroups) return
     for (const group of element.settingGroups) {
-      const setting = group.settings.find(s => s.name === settingName)
-      if (setting) {
-        setting.value = value
-        return
+      for (const setting of group.settings) {
+        if (setting.name === settingName) {
+          setting.value = value
+        }
+        if (visibility && Object.prototype.hasOwnProperty.call(visibility, setting.name)) {
+          setting.visible = Boolean(visibility[setting.name])
+        }
       }
     }
   }

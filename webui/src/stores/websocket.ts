@@ -128,7 +128,8 @@ export const useWebSocketStore = defineStore('websocket', () => {
         modulesStore.updateSettingValue(
           message.data.moduleName,
           message.data.settingName,
-          message.data.value
+          message.data.value,
+          message.data.visibility
         )
         break
 
@@ -169,7 +170,12 @@ export const useWebSocketStore = defineStore('websocket', () => {
         break
 
       case 'hud.setting.value.changed':
-        hudStore.updateSettingValue(message.data.elementName, message.data.settingName, message.data.value)
+        hudStore.updateSettingValue(
+          message.data.elementName,
+          message.data.settingName,
+          message.data.value,
+          message.data.visibility
+        )
         break
 
       case 'error':

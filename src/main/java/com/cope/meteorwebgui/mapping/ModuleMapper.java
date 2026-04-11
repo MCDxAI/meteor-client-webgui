@@ -139,7 +139,18 @@ public class ModuleMapper {
         data.addProperty("moduleName", module.name);
         data.addProperty("settingName", setting.name);
         data.add("value", SettingsReflector.getSettingValue(setting, SettingsReflector.detectSettingType(setting)));
+        data.add("visibility", createSettingVisibilityMap(module));
         return data;
+    }
+
+    private static JsonObject createSettingVisibilityMap(Module module) {
+        JsonObject visibility = new JsonObject();
+        for (SettingGroup group : module.settings) {
+            for (Setting<?> setting : group) {
+                visibility.addProperty(setting.name, setting.isVisible());
+            }
+        }
+        return visibility;
     }
 
     /**

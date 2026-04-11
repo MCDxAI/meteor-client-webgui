@@ -5,11 +5,21 @@ on:
     branches:
       - main
     paths:
-      - '**.java'
+      - '**/*.java'
+      - 'webui/**'
+      - 'src/main/resources/**'
+      - 'build.gradle.kts'
+      - 'gradle.properties'
+      - 'gradle/libs.versions.toml'
       - '.github/workflows/release.yml'
   pull_request:
     paths:
-      - '**.java'
+      - '**/*.java'
+      - 'webui/**'
+      - 'src/main/resources/**'
+      - 'build.gradle.kts'
+      - 'gradle.properties'
+      - 'gradle/libs.versions.toml'
       - '.github/workflows/release.yml'
   workflow_dispatch:
     inputs:
@@ -51,6 +61,7 @@ jobs:
 
       - name: Determine release metadata
         id: meta
+        if: github.event_name != 'pull_request'
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             TAG="v${{ github.event.inputs.version }}"
@@ -74,18 +85,62 @@ jobs:
             echo "prerelease=$PRERELEASE"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Move snapshot tag to current commit
+        if: github.event_name != 'pull_request' && github.event_name != 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f snapshot "$GITHUB_SHA"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" refs/tags/snapshot
+
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
         run: ./gradlew build --no-configuration-cache
 
+      - name: Remove old jar assets from target release
+        if: github.event_name != 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = '${{ steps.meta.outputs.tag_name }}';
+            let release;
+            try {
+              release = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag
+              });
+            } catch (error) {
+              if (error.status === 404) {
+                core.info(`Release for tag ${tag} does not exist yet; skipping cleanup.`);
+                return;
+              }
+              throw error;
+            }
+
+            const jarAssets = release.data.assets.filter(asset => asset.name.endsWith('.jar'));
+            for (const asset of jarAssets) {
+              await github.rest.repos.deleteReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                asset_id: asset.id
+              });
+              core.info(`Deleted old asset: ${asset.name}`);
+            }
+
       - name: Publish Release
+        if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.meta.outputs.tag_name }}
+          target_commitish: ${{ github.sha }}
           name: ${{ steps.meta.outputs.release_name }}
           prerelease: ${{ steps.meta.outputs.prerelease }}
           files: build/libs/*.jar
+          fail_on_unmatched_files: true

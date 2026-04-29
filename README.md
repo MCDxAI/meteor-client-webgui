@@ -6,8 +6,8 @@
 
 <div align="center">
   <img src="https://img.shields.io/badge/Status-Preview-purple?style=flat">
-  <img src="https://img.shields.io/badge/Minecraft-1.21.11-0ea5e9?style=flat">
-  <img src="https://img.shields.io/badge/Fabric%20Loader-0.18.2+-f59e0b?style=flat">
+  <img src="https://img.shields.io/badge/Minecraft-26.1.2-0ea5e9?style=flat">
+  <img src="https://img.shields.io/badge/Fabric%20Loader-0.19.2+-f59e0b?style=flat">
   <img src="https://img.shields.io/badge/Meteor%20Client-Latest-ec4899?style=flat">
 </div>
 

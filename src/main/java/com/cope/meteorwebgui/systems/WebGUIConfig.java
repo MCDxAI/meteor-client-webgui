@@ -3,7 +3,7 @@ package com.cope.meteorwebgui.systems;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.System;
 import meteordevelopment.meteorclient.systems.Systems;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class WebGUIConfig extends System<WebGUIConfig> {
     public final Settings settings = new Settings();
@@ -44,14 +44,14 @@ public class WebGUIConfig extends System<WebGUIConfig> {
     }
 
     @Override
-    public NbtCompound toTag() {
-        NbtCompound tag = new NbtCompound();
+    public CompoundTag toTag() {
+        CompoundTag tag = new CompoundTag();
         tag.put("settings", settings.toTag());
         return tag;
     }
 
     @Override
-    public WebGUIConfig fromTag(NbtCompound tag) {
+    public WebGUIConfig fromTag(CompoundTag tag) {
         if (tag.contains("settings")) {
             settings.fromTag(tag.getCompoundOrEmpty("settings"));
         }

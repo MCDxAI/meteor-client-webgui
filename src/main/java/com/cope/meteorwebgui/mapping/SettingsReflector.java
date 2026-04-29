@@ -15,26 +15,26 @@ import meteordevelopment.meteorclient.utils.misc.Keybind;
 import meteordevelopment.meteorclient.utils.misc.MyPotion;
 import meteordevelopment.meteorclient.utils.network.PacketUtils;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
-import net.minecraft.block.Block;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.particle.ParticleType;
-import net.minecraft.potion.Potion;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +76,7 @@ public class SettingsReflector {
             case "EnchantmentListSetting" -> SettingType.ENCHANTMENT_LIST;
             case "ParticleTypeListSetting" -> SettingType.PARTICLE_TYPE_LIST;
             case "SoundEventListSetting" -> SettingType.SOUND_EVENT_LIST;
-            case "StatusEffectListSetting" -> SettingType.STATUS_EFFECT_LIST;
+            case "MobEffectListSetting" -> SettingType.STATUS_EFFECT_LIST;
             case "StorageBlockListSetting" -> SettingType.STORAGE_BLOCK_LIST;
             case "StringListSetting" -> SettingType.STRING_LIST;
             case "ColorListSetting" -> SettingType.COLOR_LIST;
@@ -185,7 +185,7 @@ public class SettingsReflector {
                 }
                 case VECTOR3D -> {
                     try {
-                        if (value instanceof Vec3d vec) {
+                        if (value instanceof Vec3 vec) {
                             valueObj.addProperty("x", vec.x);
                             valueObj.addProperty("y", vec.y);
                             valueObj.addProperty("z", vec.z);
@@ -203,14 +203,14 @@ public class SettingsReflector {
                 }
                 case KEYBIND -> writeKeybindValue(valueObj, (Keybind) value);
                 case BLOCK -> {
-                    Identifier id = Registries.BLOCK.getId((Block) value);
+                    Identifier id = BuiltInRegistries.BLOCK.getKey((Block) value);
                     if (id != null) {
                         valueObj.addProperty("id", id.toString());
                         valueObj.addProperty("value", id.toString());
                     }
                 }
                 case ITEM -> {
-                    Identifier id = Registries.ITEM.getId((Item) value);
+                    Identifier id = BuiltInRegistries.ITEM.getKey((Item) value);
                     if (id != null) {
                         valueObj.addProperty("id", id.toString());
                         valueObj.addProperty("value", id.toString());
@@ -219,9 +219,9 @@ public class SettingsReflector {
                 case POTION -> {
                     Identifier id = null;
                     if (value instanceof Potion potion) {
-                        id = Registries.POTION.getId(potion);
+                        id = BuiltInRegistries.POTION.getKey(potion);
                     } else if (value instanceof MyPotion myPotion) {
-                        id = extractPotionId(myPotion.potion);
+                        id = extractPotionId(myPotion.potion.get());
                     }
                     if (id != null) {
                         valueObj.addProperty("id", id.toString());
@@ -233,7 +233,7 @@ public class SettingsReflector {
                     List<Block> blocks = (List<Block>) value;
                     JsonArray array = new JsonArray();
                     for (Block block : blocks) {
-                        array.add(Registries.BLOCK.getId(block).toString());
+                        array.add(BuiltInRegistries.BLOCK.getKey(block).toString());
                     }
                     valueObj.add("items", array);
                 }
@@ -242,7 +242,7 @@ public class SettingsReflector {
                     List<Item> items = (List<Item>) value;
                     JsonArray array = new JsonArray();
                     for (Item item : items) {
-                        array.add(Registries.ITEM.getId(item).toString());
+                        array.add(BuiltInRegistries.ITEM.getKey(item).toString());
                     }
                     valueObj.add("items", array);
                 }
@@ -251,7 +251,7 @@ public class SettingsReflector {
                     Set<EntityType<?>> entities = (Set<EntityType<?>>) value;
                     JsonArray array = new JsonArray();
                     for (EntityType<?> entity : entities) {
-                        array.add(Registries.ENTITY_TYPE.getId(entity).toString());
+                        array.add(BuiltInRegistries.ENTITY_TYPE.getKey(entity).toString());
                     }
                     valueObj.add("items", array);
                 }
@@ -292,10 +292,10 @@ public class SettingsReflector {
                 }
                 case STATUS_EFFECT_LIST -> {
                     @SuppressWarnings("unchecked")
-                    List<StatusEffect> effects = (List<StatusEffect>) value;
+                    List<MobEffect> effects = (List<MobEffect>) value;
                     JsonArray array = new JsonArray();
-                    for (StatusEffect effect : effects) {
-                        array.add(Registries.STATUS_EFFECT.getId(effect).toString());
+                    for (MobEffect effect : effects) {
+                        array.add(BuiltInRegistries.MOB_EFFECT.getKey(effect).toString());
                     }
                     valueObj.add("items", array);
                 }
@@ -304,7 +304,7 @@ public class SettingsReflector {
                     List<ParticleType<?>> particles = (List<ParticleType<?>>) value;
                     JsonArray array = new JsonArray();
                     for (ParticleType<?> particle : particles) {
-                        array.add(Registries.PARTICLE_TYPE.getId(particle).toString());
+                        array.add(BuiltInRegistries.PARTICLE_TYPE.getKey(particle).toString());
                     }
                     valueObj.add("items", array);
                 }
@@ -313,7 +313,7 @@ public class SettingsReflector {
                     List<SoundEvent> sounds = (List<SoundEvent>) value;
                     JsonArray array = new JsonArray();
                     for (SoundEvent sound : sounds) {
-                        Identifier id = Registries.SOUND_EVENT.getId(sound);
+                        Identifier id = BuiltInRegistries.SOUND_EVENT.getKey(sound);
                         if (id != null) array.add(id.toString());
                     }
                     valueObj.add("items", array);
@@ -323,27 +323,27 @@ public class SettingsReflector {
                     List<BlockEntityType<?>> blockEntityTypes = (List<BlockEntityType<?>>) value;
                     JsonArray array = new JsonArray();
                     for (BlockEntityType<?> blockEntityType : blockEntityTypes) {
-                        Identifier id = Registries.BLOCK_ENTITY_TYPE.getId(blockEntityType);
+                        Identifier id = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntityType);
                         if (id != null) array.add(id.toString());
                     }
                     valueObj.add("items", array);
                 }
                 case SCREEN_HANDLER_LIST -> {
                     @SuppressWarnings("unchecked")
-                    List<ScreenHandlerType<?>> handlers = (List<ScreenHandlerType<?>>) value;
+                    List<MenuType<?>> handlers = (List<MenuType<?>>) value;
                     JsonArray array = new JsonArray();
-                    for (ScreenHandlerType<?> handler : handlers) {
-                        array.add(Registries.SCREEN_HANDLER.getId(handler).toString());
+                    for (MenuType<?> handler : handlers) {
+                        array.add(BuiltInRegistries.MENU.getKey(handler).toString());
                     }
                     valueObj.add("items", array);
                 }
                 case STATUS_EFFECT_AMPLIFIER_MAP -> {
                     @SuppressWarnings("unchecked")
-                    Map<StatusEffect, Integer> map = (Map<StatusEffect, Integer>) value;
+                    Map<MobEffect, Integer> map = (Map<MobEffect, Integer>) value;
                     JsonArray entries = new JsonArray();
-                    for (Map.Entry<StatusEffect, Integer> entry : map.entrySet()) {
+                    for (Map.Entry<MobEffect, Integer> entry : map.entrySet()) {
                         JsonObject entryObj = new JsonObject();
-                        entryObj.addProperty("effect", Registries.STATUS_EFFECT.getId(entry.getKey()).toString());
+                        entryObj.addProperty("effect", BuiltInRegistries.MOB_EFFECT.getKey(entry.getKey()).toString());
                         entryObj.addProperty("amplifier", entry.getValue());
                         entries.add(entryObj);
                     }
@@ -371,7 +371,7 @@ public class SettingsReflector {
                     Map<Block, ?> blockData = (Map<Block, ?>) value;
                     JsonArray entries = new JsonArray();
                     for (Map.Entry<Block, ?> entry : blockData.entrySet()) {
-                        Identifier id = Registries.BLOCK.getId(entry.getKey());
+                        Identifier id = BuiltInRegistries.BLOCK.getKey(entry.getKey());
                         if (id == null) continue;
                         JsonObject entryObj = new JsonObject();
                         entryObj.addProperty("block", id.toString());
@@ -478,7 +478,7 @@ public class SettingsReflector {
                     JsonArray values = new JsonArray();
                     for (MyPotion value : MyPotion.values()) {
                         JsonObject obj = new JsonObject();
-                        Identifier id = extractPotionId(value.potion);
+                        Identifier id = extractPotionId(value.potion.get());
                         obj.addProperty("id", id != null ? id.toString() : value.name());
                         obj.addProperty("label", value.name());
                         values.add(obj);
@@ -594,8 +594,8 @@ public class SettingsReflector {
                     Setting<Block> blockSetting = (Setting<Block>) setting;
                     Identifier id = readIdentifier(valueData, setting, "id");
                     if (id == null) return false;
-                    Block block = Registries.BLOCK.get(id);
-                    if (block == null || !Registries.BLOCK.getId(block).equals(id)) {
+                    Block block = BuiltInRegistries.BLOCK.getValue(id);
+                    if (block == null || !BuiltInRegistries.BLOCK.getKey(block).equals(id)) {
                         LOG.warn("Invalid block ID '{}' for setting {}", id, setting.name);
                         return false;
                     }
@@ -605,8 +605,8 @@ public class SettingsReflector {
                     Setting<Item> itemSetting = (Setting<Item>) setting;
                     Identifier id = readIdentifier(valueData, setting, "id");
                     if (id == null) return false;
-                    Item item = Registries.ITEM.get(id);
-                    if (item == null || !Registries.ITEM.getId(item).equals(id)) {
+                    Item item = BuiltInRegistries.ITEM.getValue(id);
+                    if (item == null || !BuiltInRegistries.ITEM.getKey(item).equals(id)) {
                         LOG.warn("Invalid item ID '{}' for setting {}", id, setting.name);
                         return false;
                     }
@@ -616,8 +616,8 @@ public class SettingsReflector {
                     Setting<Potion> potionSetting = (Setting<Potion>) setting;
                     Identifier id = readIdentifier(valueData, setting, "id");
                     if (id == null) return false;
-                    Potion potion = Registries.POTION.get(id);
-                    if (potion == null || !Registries.POTION.getId(potion).equals(id)) {
+                    Potion potion = BuiltInRegistries.POTION.getValue(id);
+                    if (potion == null || !BuiltInRegistries.POTION.getKey(potion).equals(id)) {
                         LOG.warn("Invalid potion ID '{}' for setting {}", id, setting.name);
                         return false;
                     }
@@ -631,11 +631,11 @@ public class SettingsReflector {
                     return posSetting.set(new BlockPos(x, y, z));
                 }
                 case VECTOR3D -> {
-                    Setting<Vec3d> vecSetting = (Setting<Vec3d>) setting;
+                    Setting<Vec3> vecSetting = (Setting<Vec3>) setting;
                     double x = valueData.get("x").getAsDouble();
                     double y = valueData.get("y").getAsDouble();
                     double z = valueData.get("z").getAsDouble();
-                    return vecSetting.set(new Vec3d(x, y, z));
+                    return vecSetting.set(new Vec3(x, y, z));
                 }
                 case BLOCK_LIST -> {
                     Setting<List<Block>> blockList = (Setting<List<Block>>) setting;
@@ -643,9 +643,9 @@ public class SettingsReflector {
                     List<Block> blocks = new ArrayList<>();
                     for (int i = 0; i < items.size(); i++) {
                         try {
-                            Identifier id = Identifier.of(items.get(i).getAsString());
-                            Block block = Registries.BLOCK.get(id);
-                            if (block != null && Registries.BLOCK.getId(block).equals(id)) {
+                            Identifier id = Identifier.parse(items.get(i).getAsString());
+                            Block block = BuiltInRegistries.BLOCK.getValue(id);
+                            if (block != null && BuiltInRegistries.BLOCK.getKey(block).equals(id)) {
                                 blocks.add(block);
                             }
                         } catch (Exception e) {
@@ -660,9 +660,9 @@ public class SettingsReflector {
                     List<Item> itemsList = new ArrayList<>();
                     for (int i = 0; i < items.size(); i++) {
                         try {
-                            Identifier id = Identifier.of(items.get(i).getAsString());
-                            Item item = Registries.ITEM.get(id);
-                            if (item != null && Registries.ITEM.getId(item).equals(id)) {
+                            Identifier id = Identifier.parse(items.get(i).getAsString());
+                            Item item = BuiltInRegistries.ITEM.getValue(id);
+                            if (item != null && BuiltInRegistries.ITEM.getKey(item).equals(id)) {
                                 itemsList.add(item);
                             }
                         } catch (Exception e) {
@@ -677,9 +677,9 @@ public class SettingsReflector {
                     Set<EntityType<?>> entities = new ObjectOpenHashSet<>();
                     for (int i = 0; i < items.size(); i++) {
                         try {
-                            Identifier id = Identifier.of(items.get(i).getAsString());
-                            EntityType<?> entity = Registries.ENTITY_TYPE.get(id);
-                            if (entity != null && Registries.ENTITY_TYPE.getId(entity).equals(id)) {
+                            Identifier id = Identifier.parse(items.get(i).getAsString());
+                            EntityType<?> entity = BuiltInRegistries.ENTITY_TYPE.getValue(id);
+                            if (entity != null && BuiltInRegistries.ENTITY_TYPE.getKey(entity).equals(id)) {
                                 entities.add(entity);
                             }
                         } catch (Exception e) {
@@ -739,13 +739,13 @@ public class SettingsReflector {
                     return false;
                 }
                 case STATUS_EFFECT_LIST -> {
-                    Setting<List<StatusEffect>> effectList = (Setting<List<StatusEffect>>) setting;
+                    Setting<List<MobEffect>> effectList = (Setting<List<MobEffect>>) setting;
                     JsonArray items = valueData.getAsJsonArray("items");
-                    List<StatusEffect> effects = new ArrayList<>();
+                    List<MobEffect> effects = new ArrayList<>();
                     for (int i = 0; i < items.size(); i++) {
                         try {
-                            Identifier id = Identifier.of(items.get(i).getAsString());
-                            StatusEffect effect = Registries.STATUS_EFFECT.get(id);
+                            Identifier id = Identifier.parse(items.get(i).getAsString());
+                            MobEffect effect = BuiltInRegistries.MOB_EFFECT.getValue(id);
                             if (effect != null) {
                                 effects.add(effect);
                             }
@@ -761,8 +761,8 @@ public class SettingsReflector {
                     List<ParticleType<?>> particles = new ArrayList<>();
                     for (int i = 0; i < items.size(); i++) {
                         try {
-                            Identifier id = Identifier.of(items.get(i).getAsString());
-                            ParticleType<?> particle = Registries.PARTICLE_TYPE.get(id);
+                            Identifier id = Identifier.parse(items.get(i).getAsString());
+                            ParticleType<?> particle = BuiltInRegistries.PARTICLE_TYPE.getValue(id);
                             if (particle != null) {
                                 particles.add(particle);
                             }
@@ -778,8 +778,8 @@ public class SettingsReflector {
                     List<SoundEvent> sounds = new ArrayList<>();
                     for (int i = 0; i < items.size(); i++) {
                         try {
-                            Identifier id = Identifier.of(items.get(i).getAsString());
-                            SoundEvent sound = Registries.SOUND_EVENT.get(id);
+                            Identifier id = Identifier.parse(items.get(i).getAsString());
+                            SoundEvent sound = BuiltInRegistries.SOUND_EVENT.getValue(id);
                             if (sound != null) {
                                 sounds.add(sound);
                             }
@@ -796,9 +796,9 @@ public class SettingsReflector {
                     List<BlockEntityType<?>> blockEntityTypes = new ArrayList<>();
                     for (int i = 0; i < items.size(); i++) {
                         try {
-                            Identifier id = Identifier.of(items.get(i).getAsString());
-                            BlockEntityType<?> blockEntityType = Registries.BLOCK_ENTITY_TYPE.get(id);
-                            if (blockEntityType != null && Registries.BLOCK_ENTITY_TYPE.getId(blockEntityType).equals(id)) {
+                            Identifier id = Identifier.parse(items.get(i).getAsString());
+                            BlockEntityType<?> blockEntityType = BuiltInRegistries.BLOCK_ENTITY_TYPE.getValue(id);
+                            if (blockEntityType != null && BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntityType).equals(id)) {
                                 blockEntityTypes.add(blockEntityType);
                             }
                         } catch (Exception e) {
@@ -808,13 +808,13 @@ public class SettingsReflector {
                     return blockEntityList.set(blockEntityTypes);
                 }
                 case SCREEN_HANDLER_LIST -> {
-                    Setting<List<ScreenHandlerType<?>>> handlerList = (Setting<List<ScreenHandlerType<?>>>) setting;
+                    Setting<List<MenuType<?>>> handlerList = (Setting<List<MenuType<?>>>) setting;
                     JsonArray items = valueData.getAsJsonArray("items");
-                    List<ScreenHandlerType<?>> handlers = new ArrayList<>();
+                    List<MenuType<?>> handlers = new ArrayList<>();
                     for (int i = 0; i < items.size(); i++) {
                         try {
-                            Identifier id = Identifier.of(items.get(i).getAsString());
-                            ScreenHandlerType<?> handler = Registries.SCREEN_HANDLER.get(id);
+                            Identifier id = Identifier.parse(items.get(i).getAsString());
+                            MenuType<?> handler = BuiltInRegistries.MENU.getValue(id);
                             if (handler != null) {
                                 handlers.add(handler);
                             }
@@ -825,14 +825,14 @@ public class SettingsReflector {
                     return handlerList.set(handlers);
                 }
                 case STATUS_EFFECT_AMPLIFIER_MAP -> {
-                    Setting<Map<StatusEffect, Integer>> mapSetting = (Setting<Map<StatusEffect, Integer>>) setting;
+                    Setting<Map<MobEffect, Integer>> mapSetting = (Setting<Map<MobEffect, Integer>>) setting;
                     JsonArray entries = valueData.getAsJsonArray("entries");
-                    Map<StatusEffect, Integer> map = new HashMap<>();
+                    Map<MobEffect, Integer> map = new HashMap<>();
                     for (int i = 0; i < entries.size(); i++) {
                         try {
                             JsonObject entry = entries.get(i).getAsJsonObject();
-                            Identifier id = Identifier.of(entry.get("effect").getAsString());
-                            StatusEffect effect = Registries.STATUS_EFFECT.get(id);
+                            Identifier id = Identifier.parse(entry.get("effect").getAsString());
+                            MobEffect effect = BuiltInRegistries.MOB_EFFECT.getValue(id);
                             int amplifier = entry.get("amplifier").getAsInt();
                             if (effect != null) {
                                 map.put(effect, amplifier);
@@ -893,10 +893,10 @@ public class SettingsReflector {
             return;
         }
 
-        NbtCompound tag = keybind.toTag();
-        valueObj.addProperty("isKey", tag.getBoolean("isKey", false));
-        valueObj.addProperty("value", tag.getInt("value", -1));
-        valueObj.addProperty("modifiers", tag.getInt("modifiers", 0));
+        CompoundTag tag = keybind.toTag();
+        valueObj.addProperty("isKey", tag.getBooleanOr("isKey", false));
+        valueObj.addProperty("value", tag.getIntOr("value", -1));
+        valueObj.addProperty("modifiers", tag.getIntOr("modifiers", 0));
         valueObj.addProperty("label", keybind.toString());
     }
 
@@ -941,11 +941,11 @@ public class SettingsReflector {
 
     private static Identifier extractPotionId(ItemStack stack) {
         if (stack == null) return null;
-        PotionContentsComponent contents = stack.get(DataComponentTypes.POTION_CONTENTS);
+        PotionContents contents = stack.get(DataComponents.POTION_CONTENTS);
         if (contents == null) return null;
         var entryOpt = contents.potion();
         if (entryOpt.isEmpty()) return null;
-        return entryOpt.get().getKey().map(RegistryKey::getValue).orElse(null);
+        return entryOpt.get().unwrapKey().map(ResourceKey::identifier).orElse(null);
     }
 
     private static Identifier readIdentifier(JsonObject valueData, Setting<?> setting, String key) {
@@ -955,7 +955,7 @@ public class SettingsReflector {
         }
         try {
             String raw = valueData.get(key).getAsString();
-            return Identifier.of(raw);
+            return Identifier.parse(raw);
         } catch (Exception e) {
             LOG.warn("Invalid identifier for setting {}: {}", setting.name, e.getMessage());
             return null;

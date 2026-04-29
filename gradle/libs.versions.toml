@@ -1,15 +1,15 @@
 [versions]
 # Mod Properties
-mod-version = "0.3.0"
+mod-version = "0.4.0"
 
 # Minecraft
-minecraft = "1.21.11"
-yarn-mappings = "1.21.11+build.3"
-fabric-loader = "0.18.2"
-loom = "1.14-SNAPSHOT"
+jdk = "25"
+minecraft = "26.1.2"
+fabric-loader = "0.19.2"
+loom = "1.16-SNAPSHOT"
 
 # Dependencies
-meteor = "1.21.11-SNAPSHOT"
+meteor = "26.1.2-SNAPSHOT"
 orbit = "0.2.4"
 
 # WebServer and WebSocket
@@ -22,7 +22,6 @@ junit = "5.10.2"
 [libraries]
 # Minecraft
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
-yarn = { module = "net.fabricmc:yarn", version.ref = "yarn-mappings" }
 fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
 
 # Meteor
@@ -42,4 +41,4 @@ junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref 
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 
 [plugins]
-fabric-loom = { id = "fabric-loom", version.ref = "loom" }
+fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "loom" }

@@ -4,12 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.systems.modules.Modules;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.item.Item;
-import net.minecraft.potion.Potion;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,8 +25,8 @@ public class RegistryProvider {
         JsonArray blocks = new JsonArray();
         Map<String, JsonArray> byNamespace = new HashMap<>();
 
-        Registries.BLOCK.getEntrySet().forEach(entry -> {
-            Identifier id = entry.getKey().getValue();
+        BuiltInRegistries.BLOCK.entrySet().forEach(entry -> {
+            Identifier id = entry.getKey().identifier();
             String idString = id.toString();
             String namespace = id.getNamespace();
 
@@ -56,8 +53,8 @@ public class RegistryProvider {
         JsonArray items = new JsonArray();
         Map<String, JsonArray> byNamespace = new HashMap<>();
 
-        Registries.ITEM.getEntrySet().forEach(entry -> {
-            Identifier id = entry.getKey().getValue();
+        BuiltInRegistries.ITEM.entrySet().forEach(entry -> {
+            Identifier id = entry.getKey().identifier();
             Item item = entry.getValue();
             String idString = id.toString();
             String namespace = id.getNamespace();
@@ -83,8 +80,8 @@ public class RegistryProvider {
     public static JsonArray getAllPotions() {
         JsonArray potions = new JsonArray();
 
-        Registries.POTION.getEntrySet().forEach(entry -> {
-            Identifier id = entry.getKey().getValue();
+        BuiltInRegistries.POTION.entrySet().forEach(entry -> {
+            Identifier id = entry.getKey().identifier();
             JsonObject potionObj = new JsonObject();
             potionObj.addProperty("id", id.toString());
             potionObj.addProperty("namespace", id.getNamespace());
@@ -102,8 +99,8 @@ public class RegistryProvider {
         JsonArray entities = new JsonArray();
         Map<String, JsonArray> byNamespace = new HashMap<>();
 
-        Registries.ENTITY_TYPE.getEntrySet().forEach(entry -> {
-            Identifier id = entry.getKey().getValue();
+        BuiltInRegistries.ENTITY_TYPE.entrySet().forEach(entry -> {
+            Identifier id = entry.getKey().identifier();
             String idString = id.toString();
             String namespace = id.getNamespace();
 
@@ -128,8 +125,8 @@ public class RegistryProvider {
     public static JsonArray getAllStatusEffects() {
         JsonArray effects = new JsonArray();
 
-        Registries.STATUS_EFFECT.getEntrySet().forEach(entry -> {
-            Identifier id = entry.getKey().getValue();
+        BuiltInRegistries.MOB_EFFECT.entrySet().forEach(entry -> {
+            Identifier id = entry.getKey().identifier();
             JsonObject effectObj = new JsonObject();
             effectObj.addProperty("id", id.toString());
             effectObj.addProperty("namespace", id.getNamespace());

@@ -3,9 +3,9 @@ package com.cope.meteorwebgui.mixin;
 import com.cope.meteorwebgui.hud.HudPreviewCapture;
 import meteordevelopment.meteorclient.systems.hud.HudRenderer;
 import meteordevelopment.meteorclient.utils.render.color.Color;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -45,22 +45,22 @@ public class HudRendererMixin {
         HudPreviewCapture.markNonText();
     }
 
-    @Inject(method = "texture(Lnet/minecraft/util/Identifier;DDDDLmeteordevelopment/meteorclient/utils/render/color/Color;)V", at = @At("HEAD"))
+    @Inject(method = "texture(Lnet/minecraft/resources/Identifier;DDDDLmeteordevelopment/meteorclient/utils/render/color/Color;)V", at = @At("HEAD"))
     private void meteorwebgui$markTexture(Identifier texture, double x, double y, double width, double height, Color color, CallbackInfo ci) {
         HudPreviewCapture.markNonText();
     }
 
-    @Inject(method = "item(Lnet/minecraft/item/ItemStack;IIFZLjava/lang/String;)V", at = @At("HEAD"))
+    @Inject(method = "item(Lnet/minecraft/world/item/ItemStack;IIFZLjava/lang/String;)V", at = @At("HEAD"))
     private void meteorwebgui$markItem(ItemStack stack, int x, int y, float scale, boolean overlay, String countLabel, CallbackInfo ci) {
         HudPreviewCapture.markNonText();
     }
 
-    @Inject(method = "item(Lnet/minecraft/item/ItemStack;IIFZ)V", at = @At("HEAD"))
+    @Inject(method = "item(Lnet/minecraft/world/item/ItemStack;IIFZ)V", at = @At("HEAD"))
     private void meteorwebgui$markItemSimple(ItemStack stack, int x, int y, float scale, boolean overlay, CallbackInfo ci) {
         HudPreviewCapture.markNonText();
     }
 
-    @Inject(method = "entity(Lnet/minecraft/entity/LivingEntity;IIIIFF)V", at = @At("HEAD"))
+    @Inject(method = "entity(Lnet/minecraft/world/entity/LivingEntity;IIIIFF)V", at = @At("HEAD"))
     private void meteorwebgui$markEntity(LivingEntity entity, int x, int y, int sizeX, int sizeY, float pitch, float yaw, CallbackInfo ci) {
         HudPreviewCapture.markNonText();
     }

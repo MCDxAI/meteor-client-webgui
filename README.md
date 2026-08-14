@@ -1,7 +1,7 @@
 <div align="center">
   <h1>Meteor WebGUI</h1>
-  <img width="256" height="256" alt="icon" src="https://github.com/user-attachments/assets/273769c8-c51d-4294-9b2b-cddbac3e91ba" />
-  <p><strong>Real-time, bi-directional web interface for every Meteor Client module and setting.</strong></p>
+  <img width="196" height="196" alt="Meteor WebGUI icon" src="https://github.com/user-attachments/assets/273769c8-c51d-4294-9b2b-cddbac3e91ba" />
+  <p><strong>Control every Meteor Client module and setting from your web browser.</strong></p>
 </div>
 
 <div align="center">
@@ -12,227 +12,170 @@
   <img src="https://img.shields.io/badge/Java-25+-orange?style=flat">
 </div>
 
-<br>
+## What is Meteor WebGUI?
 
-<div align="center">
+TLDR: Meteor WebGUI is a Meteor Client addon that puts a live control panel in your web browser. Toggle modules and edit settings in the browser, and the game updates instantly. Change something in-game, and the browser updates too.
 
-| | |
-|:---:|:---:|
-| **Module Control** | Toggle, search, and organize every module from Meteor and installed addons — grouped by category or filtered by favorites. |
-| **Full Settings Editor** | 30+ setting types with type-aware UI controls: bool toggles, int/double sliders, color pickers, enum dropdowns, keybind capture, list editors, and more. |
-| **Bi-directional Sync** | Changes in the browser appear in-game instantly and vice-versa, powered by a persistent WebSocket channel. |
-| **Registry Streaming** | Block, item, entity, and potion registries stream on demand so list-setting editors always have up-to-date data. |
-| **Live HUD Preview** | Real-time text snapshots of active HUD elements rendered directly in the browser with full settings control. |
-| **Zero-config Serving** | The Vue 3 + TypeScript front-end is bundled into the JAR at build time and served from the addon's own HTTP server. |
+Some background, in plain words:
 
-</div>
+- **Meteor Client** is a utility client for Minecraft. It organizes its features into **modules** — hundreds of them, grouped into categories like Combat, Movement, and Render.
+- **Addons** extend Meteor Client. Install an addon, and its modules appear next to the built-in ones.
+- This addon adds a **WebGUI** tab to the Meteor GUI. From that tab you start a small web server inside your game. Any browser on the same machine can then open a full control panel.
 
-<br>
+The addon discovers every module, every setting, and every HUD element at runtime — from Meteor Client and from every addon you have installed. There is no per-module setup and nothing to register.
 
-<div align="center">
-  <h1>Architecture</h1>
-</div>
-
-<div align="center">
-
-```
- ┌──────────────┐      HTTP / static files       ┌──────────────────┐
- │              │ ◄─────────────────────────────  │                  │
- │   Vue 3 SPA  │                                │  NanoHTTPD       │
- │  (Vite + TS) │      WebSocket (port 8080)      │  HTTP + WS       │
- │              │ ◄════════════════════════════►  │                  │
- └──────────────┘    bi-directional messages      └────────┬─────────┘
-                                                                     │
-                                              ┌─────────────────────┘
-                                              │
-                                    ┌─────────▼─────────┐
-                                    │  Meteor Client     │
-                                    │  Module / Settings │
-                                    │  HUD System        │
-                                    └───────────────────┘
-```
-
-</div>
-
-<div align="center">
-  <p>The Java backend discovers <em>all</em> modules, settings, and HUD elements at runtime via reflection — no manual registration required. The Vue front-end receives a full state snapshot on connect, then streams deltas for instant responsiveness.</p>
-</div>
-
-<br>
-
-<div align="center">
-  <h1>Quick Start</h1>
-</div>
-
-<div align="center">
-
-| Step | Instructions |
-|:---:|:---|
-| **1. Requirements** | • Java 25+<br>• Minecraft 26.2 with Fabric Loader 0.19.3+<br>• Meteor Client 26.2+ |
-| **2. Install** | Download the latest `.jar` from [Releases](https://github.com/MCDxAI/meteor-client-webgui/releases) and drop it into `.minecraft/mods/`. |
-| **3. Launch** | Start Minecraft with your Fabric profile. Open Meteor GUI (**Right Shift**) → **WebGUI** tab. |
-| **4. Configure** | Set **Host** (default `127.0.0.1`) and **Port** (default `8080`). Enable **Auto Start** if desired. Click **Start Server**. |
-| **5. Open** | Visit `http://127.0.0.1:8080` in any browser on the same machine. |
-
-</div>
-
-<br>
-
-<div align="center">
-  <h1>WebSocket Protocol</h1>
-</div>
-
-<div align="center">
-
-Messages are JSON objects: `{ "type": "...", "data": { … }, "id": "optional-request-id" }`
-
-</div>
-
-<div align="center">
-
-| Direction | Type | Description |
-|:---:|:---|:---|
-| Server → Client | `initial.state` | Full module/settings snapshot sent on connection |
-| Server → Client | `module.state.changed` | Module was toggled in-game |
-| Server → Client | `setting.value.changed` | A setting was modified in-game |
-| Server → Client | `registry.data` | Paginated block/item/entity/potion registry data |
-| Server → Client | `hud.preview.update` | Live HUD text snapshot |
-| Server → Client | `favorites.state.changed` | Favorites list updated |
-| Client → Server | `module.toggle` | Toggle a module on/off |
-| Client → Server | `setting.update` | Change a setting value |
-| Client → Server | `registry.request` | Request paginated registry data |
-| Client → Server | `hud.toggle` | Toggle HUD element visibility |
-| Client → Server | `favorites.update` | Update favorites list |
-
-</div>
-
-<br>
-
-<div align="center">
-  <h1>Supported Setting Types</h1>
-</div>
-
-<div align="center">
-
-| Category | Types |
+| Feature | What you get |
 |:---|:---|
-| **Primitives** | Bool, Int, Double, String, StringList, Enum |
-| **Visual** | Color, ColorList, Keybind, FontFace |
-| **Spatial** | BlockPos, Vector3d |
-| **Registry** | BlockList, ItemList, EntityTypeList, Potion, StatusEffectAmplifierMap, RegistryValue |
-| **Lists** | ModuleList, EnchantmentList, ParticleTypeList, SoundEventList, StatusEffectList, StorageBlockList, PacketList, ScreenHandlerList, GenericList |
-| **Fallback** | Generic (auto-renders any unrecognized type) |
+| **All modules, all addons** | Browse, search, and toggle every module, grouped by category or filtered by favorites. |
+| **Full settings editor** | 30+ setting types, each with a matching control: toggles, sliders, color pickers, dropdowns, keybind capture, list editors, and more. See [supported setting types](docs/SETTINGS-TYPES.md). |
+| **Two-way live sync** | Changes in the browser appear in-game instantly. Changes in-game appear in the browser instantly. |
+| **Registry data on demand** | Block, item, entity, and potion lists load only when a setting needs them, so the first connection stays fast. |
+| **Live HUD preview** | The browser shows what your active HUD elements render, refreshed roughly every 200 ms, with full settings control. |
+| **Zero extra setup** | The web interface ships inside the addon JAR. No second download, no web server to install. |
 
-</div>
+## Requirements
 
-<br>
+| Requirement | Version |
+|:---|:---|
+| Java | 25 or newer |
+| Minecraft | 26.2 |
+| Fabric Loader | 0.19.3 or newer |
+| Meteor Client | 26.2 or newer |
+| Browser | Any modern browser |
 
-<div align="center">
-  <h1>Development</h1>
-</div>
+## Install
 
-<div align="center">
+1. Download `meteor-webgui-0.5.0.jar` from the [Releases page](https://github.com/MCDxAI/meteor-client-webgui/releases).
+2. Copy the JAR into your `.minecraft/mods` folder.
+3. Start Minecraft with your Fabric profile.
+
+## Start the server
+
+1. Press **Right Shift** to open the Meteor GUI.
+2. Open the **WebGUI** tab.
+3. Click **Start Server**.
+4. Click **Open in Browser**. You can also visit `http://127.0.0.1:8080` yourself.
+
+The tab shows the server status while the game runs. The server uses two settings by default:
+
+| Setting | Default | Meaning |
+|:---|:---|:---|
+| Host | `127.0.0.1` | The network address the server binds to. The default limits access to your own machine. |
+| Port | `8080` | The port for the web page and the WebSocket connection. Range: 1024–65535. |
+
+The tab also has an **Auto Start** setting. Enable it, and the server starts every time Minecraft loads. Your choices persist with your Meteor Client config.
+
+### Security
+
+The server has no login and no password. Anyone who can reach the port can control your client. The default host `127.0.0.1` keeps the server private to your machine. Only change the host if you trust every device on that network.
+
+## How it works
+
+The addon runs a small web server (NanoHTTPD) inside your game. It serves the bundled web interface as static files and keeps a live WebSocket connection open on the same port.
+
+```
+┌──────────────┐   HTTP: web page + assets   ┌──────────────────┐
+│              │ ◄──────────────────────────  │  Your game       │
+│   Browser    │                              │  Meteor WebGUI   │
+│  (Vue app)   │ ◄═════ WebSocket /ws ═════►  │  addon server    │
+│              │     live two-way messages    │                  │
+└──────────────┘                              └────────┬─────────┘
+                                                       │
+                                             ┌─────────▼─────────┐
+                                             │  Meteor Client    │
+                                             │  modules, settings│
+                                             │  and HUD elements │
+                                             └───────────────────┘
+```
+
+On connect, the browser receives a full snapshot of your modules, settings, HUD elements, and favorites. After that, both sides send only changes. The Java side reads and writes settings through Meteor's own APIs. Everything you do in the browser behaves exactly as if you did it in the Meteor GUI.
+
+Want to script against the addon or build your own interface? Read the [WebSocket protocol reference](docs/WEBSOCKET-PROTOCOL.md).
+
+## Documentation
+
+| Document | What it covers |
+|:---|:---|
+| [WebSocket protocol](docs/WEBSOCKET-PROTOCOL.md) | Every message type, payload shape, and a minimal client example. For custom clients and scripts. |
+| [Supported setting types](docs/SETTINGS-TYPES.md) | Every setting type the web interface renders, its control, and its JSON value shape. Includes a guide for adding new types. |
+
+## Build from source
+
+You need a JDK 25 and Node.js 18 or newer with npm. Node is required because the build compiles the front-end.
+
+1. Clone the repository.
+2. Run `./gradlew build`.
+3. Take the JAR from `build/libs/meteor-webgui-0.5.0.jar`.
+
+One command builds both parts. Gradle installs the front-end dependencies, compiles the Vue app, and bundles it into the JAR.
+
+Other useful tasks:
 
 | Task | Command |
 |:---|:---|
-| Build the addon JAR (includes front-end) | `./gradlew build` |
-| Run in Minecraft dev environment | `./gradlew runClient` |
-| Run tests | `./gradlew test` |
-| Clean all build artifacts | `./gradlew clean` |
-| Install WebUI deps | `cd webui && npm install` |
-| Dev server with hot-reload (port 3000) | `cd webui && npm run dev` |
-| Production front-end build | `cd webui && npm run build` |
+| Run the game with the addon in a dev environment | `./gradlew runClient` |
+| Run the Java tests | `./gradlew test` |
+| Remove all build artifacts | `./gradlew clean` |
 
-</div>
+### Front-end development
 
-<div align="center">
-  <p><strong>Dev mode:</strong> Run <code>npm run dev</code> in <code>webui/</code>. Vite serves on port 3000 and proxies WebSocket traffic to the in-game server on port 8080. Changes to Vue components reflect instantly.</p>
-</div>
+The web interface is a Vue 3 app in `webui/`. During development, Vite serves it with hot reload and proxies WebSocket traffic to the game.
 
-<div align="center">
-  <p><strong>Production mode:</strong> <code>./gradlew build</code> compiles the Vue front-end, copies it into <code>src/main/resources/webui/</code>, and bundles everything into a single JAR. The addon serves both static files and the WebSocket endpoint on the configured port.</p>
-</div>
+1. Run `./gradlew runClient` to start the game with the addon.
+2. Start the server from the WebGUI tab in-game.
+3. Change to the `webui` folder: `cd webui`.
+4. Run `npm install` (first time only).
+5. Run `npm run dev`.
+6. Open `http://localhost:3000` in your browser.
 
-<br>
+Changes to Vue components now appear without a reload or a game restart.
 
-<div align="center">
-  <h1>Project Structure</h1>
-</div>
+## Project structure
 
-<div align="center">
+Two codebases live in this repository: the Java addon and the Vue front-end.
 
 ```
 src/main/java/com/cope/meteorwebgui/
-├── MeteorWebGUIAddon.java            # Entry point, server lifecycle
-├── server/                           # HTTP + WebSocket servers (NanoHTTPD)
-├── mapping/                          # Module, HUD, Settings, Registry discovery
-├── events/                           # Real-time event broadcasting
-├── protocol/                         # WSMessage model + MessageType enum
-├── systems/                          # Persistent config (host, port, auto-start)
-├── gui/                              # In-game WebGUI tab
-├── hud/                              # HUD preview service + snapshot models
-├── mixin/                            # HUD lifecycle + rendering hooks
-└── util/                             # Utility classes
+├── MeteorWebGUIAddon.java         # Addon entry point; server start/stop
+├── server/                        # HTTP + WebSocket server (NanoHTTPD)
+│   ├── MeteorHTTPServer.java      # Serves the bundled web interface; accepts /ws upgrades
+│   ├── MeteorWebServer.java       # Server lifecycle; broadcasts to all clients
+│   ├── MeteorWebSocket.java       # Per-connection message handling
+│   └── MeteorWebSocketHandler.java # Connection pool; broadcast helpers
+├── mapping/                       # Runtime discovery
+│   ├── ModuleMapper.java          # All modules, grouped by category
+│   ├── HudMapper.java             # All HUD elements
+│   ├── SettingsReflector.java     # Reads and writes any setting by type
+│   ├── SettingType.java           # Setting type enum
+│   └── RegistryProvider.java      # Block, item, entity, and potion registry data
+├── events/EventMonitor.java       # Watches the game; broadcasts module and setting changes
+├── protocol/                      # WSMessage model + MessageType enum
+├── systems/WebGUIConfig.java      # Host, port, and auto-start settings (persisted)
+├── gui/WebGUITab.java             # The in-game WebGUI tab
+├── hud/                           # HUD preview snapshots, ~200 ms cadence
+├── mixin/                         # HUD lifecycle and render hooks
+└── util/BrowserHelper.java        # Opens the default browser
 
 webui/src/
-├── main.ts                           # App entry point
-├── App.vue                           # Root component
-├── stores/                           # Pinia stores (modules, websocket, hud)
-├── components/
-│   ├── ModuleList.vue                # Category-organized module list
-│   ├── ModuleCard.vue                # Individual module card
-│   ├── ModuleCardCompact.vue         # Compact card view
-│   ├── ModuleSettingsDialog.vue      # Modal for module settings
-│   ├── SettingsPanel.vue             # Settings display + type routing
-│   ├── hud/                          # HUD dashboard + settings
-│   ├── layout/                       # Layout components
-│   ├── modals/                       # Modal dialogs
-│   ├── ui/                           # Reusable UI primitives
-│   └── settings/                     # 21 type-specific setting components
+├── main.ts                        # Front-end entry point
+├── App.vue                        # Root component
+├── stores/                        # Pinia stores (modules, websocket, hud)
+└── components/
+    ├── ModuleList.vue             # Category list with search
+    ├── ModuleCard.vue             # Module card
+    ├── ModuleCardCompact.vue      # Compact card variant
+    ├── ModuleSettingsDialog.vue   # Settings modal for one module
+    ├── ModuleToolbar.vue          # Toolbar controls
+    ├── SettingsPanel.vue          # Routes each setting type to its component
+    ├── hud/                       # HUD dashboard and settings dialog
+    └── settings/                  # 21 setting-type components
 ```
 
-</div>
-
-<br>
-
-<div align="center">
-  <h1>Tech Stack</h1>
-</div>
-
-<div align="center">
+## Tech stack
 
 | Layer | Technology |
 |:---|:---|
-| **Game mod** | Fabric 0.19.3 · Minecraft 26.2 · Meteor Client 26.2 |
-| **Server** | NanoHTTPD 2.3.1 (HTTP + WebSocket) · Gson 2.11.0 |
-| **Front-end** | Vue 3.5 · Pinia 2.3 · TypeScript 5.7 · Vite 6.0 |
-| **Build** | Gradle (Fabric Loom) · npm · CI via GitHub Actions |
-
-</div>
-
-<br>
-
-<div align="center">
-  <h1>Adding a New Setting Type</h1>
-</div>
-
-<div align="center">
-
-1. Add type detection in `SettingsReflector.detectSettingType()`
-2. Implement value extraction in `SettingsReflector.getSettingValue()`
-3. Implement value writing in `SettingsReflector.setSettingValue()`
-4. Add enum value in `SettingType`
-5. Create a Vue component in `webui/src/components/settings/`
-6. Register the component in `SettingsPanel.vue`
-
-</div>
-
-<br>
-
-<div align="center">
-  <h1>License</h1>
-</div>
-
-<div align="center">
-  <p>This project is provided as-is. See the repository for license details.</p>
-</div>
+| Game addon | Fabric · Minecraft 26.2 · Meteor Client 26.2 |
+| Server | NanoHTTPD 2.3.1 (HTTP + WebSocket) · Gson 2.11.0 |
+| Front-end | Vue 3.5 · Pinia 2.3 · TypeScript 5.7 · Vite 6.0 |
+| Build | Gradle with Fabric Loom · npm · GitHub Actions |

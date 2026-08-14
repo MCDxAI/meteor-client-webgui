@@ -14,13 +14,7 @@
 
 ## What is Meteor WebGUI?
 
-TLDR: Meteor WebGUI is a Meteor Client addon that puts a live control panel in your web browser. Toggle modules and edit settings in the browser, and the game updates instantly. Change something in-game, and the browser updates too.
-
-Some background, in plain words:
-
-- **Meteor Client** is a utility client for Minecraft. It organizes its features into **modules** — hundreds of them, grouped into categories like Combat, Movement, and Render.
-- **Addons** extend Meteor Client. Install an addon, and its modules appear next to the built-in ones.
-- This addon adds a **WebGUI** tab to the Meteor GUI. From that tab you start a small web server inside your game. Any browser on the same machine can then open a full control panel.
+Meteor WebGUI is a Meteor Client addon that puts a live control panel in your web browser. Toggle modules and edit settings in the browser, and the game updates instantly. Change something in-game, and the browser updates too.
 
 The addon discovers every module, every setting, and every HUD element at runtime — from Meteor Client and from every addon you have installed. There is no per-module setup and nothing to register.
 

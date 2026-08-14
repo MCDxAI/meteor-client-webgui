@@ -25,7 +25,7 @@ Meteor WebGUI is a Meteor Client addon that provides a web-based GUI with real-t
 ./gradlew clean
 ```
 
-Output JAR: `build/libs/meteor-webgui-0.3.0.jar`
+Output JAR: `build/libs/meteor-webgui-0.4.0.jar`
 
 ### WebUI Development
 ```bash
@@ -130,7 +130,7 @@ The INDEX.md file contains:
 - Usage guidelines and research strategies
 - Best practices for finding relevant implementation examples
 
-All reference addons are verified and compatible with Minecraft 1.21.11 and Meteor Client 1.21.11.
+All reference addons are verified and compatible with Minecraft 26.1.2 and Meteor Client 26.1.2.
 
 ### ai_docs Folder
 The `ai_docs/` folder contains detailed technical documentation about the project architecture and Meteor Client integration:
@@ -243,9 +243,9 @@ webui/src/
 Dependencies are managed via `gradle/libs.versions.toml`:
 
 ### Java
-- **Minecraft**: 1.21.11
-- **Fabric Loader**: 0.18.2
-- **Meteor Client**: 1.21.11-SNAPSHOT (from Maven)
+- **Minecraft**: 26.1.2
+- **Fabric Loader**: 0.19.2
+- **Meteor Client**: 26.1.2-SNAPSHOT (from Maven)
 - **Orbit**: 0.2.4 (event system)
 - **NanoHTTPD**: 2.3.1 (HTTP and WebSocket server)
 - **Gson**: 2.11.0 (JSON serialization)

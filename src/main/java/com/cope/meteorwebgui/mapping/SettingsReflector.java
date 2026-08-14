@@ -22,6 +22,7 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
@@ -351,10 +352,10 @@ public class SettingsReflector {
                 }
                 case PACKET_LIST -> {
                     @SuppressWarnings("unchecked")
-                    Set<Class<? extends Packet<?>>> packets = (Set<Class<? extends Packet<?>>>) value;
+                    Set<PacketType<? extends Packet<?>>> packets = (Set<PacketType<? extends Packet<?>>>) value;
                     JsonArray array = new JsonArray();
-                    for (Class<? extends Packet<?>> packet : packets) {
-                        array.add(PacketUtils.getName(packet));
+                    for (PacketType<? extends Packet<?>> packet : packets) {
+                        array.add(packet.toString());
                     }
                     valueObj.add("items", array);
                 }
@@ -445,13 +446,13 @@ public class SettingsReflector {
                     meta.addProperty("decimalPlaces", doubleSetting.decimalPlaces);
                 }
                 case ENUM -> {
-                    List<String> suggestions = setting.getSuggestions();
+                    Iterable<String> suggestions = setting.getSuggestions();
                     JsonArray values = new JsonArray();
                     suggestions.forEach(values::add);
                     meta.add("values", values);
                 }
                 case PROVIDED_STRING -> {
-                    List<String> suggestions = setting.getSuggestions();
+                    Iterable<String> suggestions = setting.getSuggestions();
                     JsonArray values = new JsonArray();
                     suggestions.forEach(values::add);
                     meta.add("suggestions", values);
@@ -844,13 +845,13 @@ public class SettingsReflector {
                     return mapSetting.set(map);
                 }
                 case PACKET_LIST -> {
-                    Setting<Set<Class<? extends Packet<?>>>> packetSetting = (Setting<Set<Class<? extends Packet<?>>>>) setting;
+                    Setting<Set<PacketType<? extends Packet<?>>>> packetSetting = (Setting<Set<PacketType<? extends Packet<?>>>>) setting;
                     JsonArray items = valueData.getAsJsonArray("items");
-                    Set<Class<? extends Packet<?>>> packets = new ObjectOpenHashSet<>();
+                    Set<PacketType<? extends Packet<?>>> packets = new ObjectOpenHashSet<>();
                     for (int i = 0; i < items.size(); i++) {
                         try {
                             String name = items.get(i).getAsString();
-                            Class<? extends Packet<?>> packet = PacketUtils.getPacket(name);
+                            PacketType<? extends Packet<?>> packet = PacketUtils.getPacket(name);
                             if (packet != null) packets.add(packet);
                             else LOG.warn("Unknown packet '{}' in setting {}", name, setting.name);
                         } catch (Exception e) {

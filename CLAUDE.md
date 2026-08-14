@@ -130,7 +130,7 @@ The INDEX.md file contains:
 - Usage guidelines and research strategies
 - Best practices for finding relevant implementation examples
 
-All reference addons are verified and compatible with Minecraft 26.1.2 and Meteor Client 26.1.2.
+All reference addons are verified and compatible with Minecraft 26.2 and Meteor Client 26.2.
 
 ### ai_docs Folder
 The `ai_docs/` folder contains detailed technical documentation about the project architecture and Meteor Client integration:
@@ -243,9 +243,9 @@ webui/src/
 Dependencies are managed via `gradle/libs.versions.toml`:
 
 ### Java
-- **Minecraft**: 26.1.2
-- **Fabric Loader**: 0.19.2
-- **Meteor Client**: 26.1.2-SNAPSHOT (from Maven)
+- **Minecraft**: 26.2
+- **Fabric Loader**: 0.19.3
+- **Meteor Client**: 26.2-SNAPSHOT (from Maven)
 - **Orbit**: 0.2.4 (event system)
 - **NanoHTTPD**: 2.3.1 (HTTP and WebSocket server)
 - **Gson**: 2.11.0 (JSON serialization)

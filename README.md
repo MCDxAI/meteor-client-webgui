@@ -6,9 +6,9 @@
 
 <div align="center">
   <img src="https://img.shields.io/badge/Status-Preview-purple?style=flat">
-  <img src="https://img.shields.io/badge/Minecraft-26.1.2-0ea5e9?style=flat">
-  <img src="https://img.shields.io/badge/Fabric%20Loader-0.19.2+-f59e0b?style=flat">
-  <img src="https://img.shields.io/badge/Meteor%20Client-26.1.2-ec4899?style=flat">
+  <img src="https://img.shields.io/badge/Minecraft-26.2-0ea5e9?style=flat">
+  <img src="https://img.shields.io/badge/Fabric%20Loader-0.19.3+-f59e0b?style=flat">
+  <img src="https://img.shields.io/badge/Meteor%20Client-26.2-ec4899?style=flat">
   <img src="https://img.shields.io/badge/Java-25+-orange?style=flat">
 </div>
 
@@ -68,7 +68,7 @@
 
 | Step | Instructions |
 |:---:|:---|
-| **1. Requirements** | • Java 25+<br>• Minecraft 26.1.2 with Fabric Loader 0.19.2+<br>• Meteor Client 26.1.2+ |
+| **1. Requirements** | • Java 25+<br>• Minecraft 26.2 with Fabric Loader 0.19.3+<br>• Meteor Client 26.2+ |
 | **2. Install** | Download the latest `.jar` from [Releases](https://github.com/MCDxAI/meteor-client-webgui/releases) and drop it into `.minecraft/mods/`. |
 | **3. Launch** | Start Minecraft with your Fabric profile. Open Meteor GUI (**Right Shift**) → **WebGUI** tab. |
 | **4. Configure** | Set **Host** (default `127.0.0.1`) and **Port** (default `8080`). Enable **Auto Start** if desired. Click **Start Server**. |
@@ -203,7 +203,7 @@ webui/src/
 
 | Layer | Technology |
 |:---|:---|
-| **Game mod** | Fabric 0.19.2 · Minecraft 26.1.2 · Meteor Client 26.1.2 |
+| **Game mod** | Fabric 0.19.3 · Minecraft 26.2 · Meteor Client 26.2 |
 | **Server** | NanoHTTPD 2.3.1 (HTTP + WebSocket) · Gson 2.11.0 |
 | **Front-end** | Vue 3.5 · Pinia 2.3 · TypeScript 5.7 · Vite 6.0 |
 | **Build** | Gradle (Fabric Loom) · npm · CI via GitHub Actions |

@@ -4,9 +4,6 @@
     "Utility",
     "Misc"
   ],
-  "supported_versions": [
-    "1.21.11"
-  ],
   "discord": "https://discord.gg/tBCMTFDruG",
   "homepage": "https://github.com/MeteorDevelopment/meteor-client-webgui"
 }
